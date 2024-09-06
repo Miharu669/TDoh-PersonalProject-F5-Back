@@ -34,3 +34,4 @@ build/
 
 ### More ###
 .env
+src/main/resources/secrets/
