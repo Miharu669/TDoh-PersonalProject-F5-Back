@@ -47,6 +47,6 @@ public class AuthController {
         json.put("username", auth.getName());
         json.put("email", user.getEmail());
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(json);
+        return ResponseEntity.status(HttpStatus.OK).body(json);
     }
 }

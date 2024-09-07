@@ -1,21 +1,27 @@
 package dev.doel.TDoh.users;
 
-public class UserDto { 
+import lombok.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserDto {
+
+    private long id; 
+    @NotBlank(message = "Username is required")
+    @Size(min = 6, max = 20, message = "Username must be between 6 and 20 characters")
     private String username;
-    private String password;
-    
-    public String getUsername() {
-        return username;
-    }
-    
-    public String getPassword() {
-        return password;
-    }
 
-    public UserDto(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, max = 15, message = "Password must be between 6 and 15 characters")
+    private String password;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email should be valid")
+    private String email;
 
 }

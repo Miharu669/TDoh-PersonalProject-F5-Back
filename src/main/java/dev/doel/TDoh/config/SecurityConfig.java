@@ -28,9 +28,11 @@ public class SecurityConfig {
     String endpoint;
 
     JpaUserDetailsService jpaUserDetailsService;
+    BasicAuthEntryPoint basicAuthEntryPoint;
 
-    public SecurityConfig(JpaUserDetailsService jpaUserDetailsService) {
+    public SecurityConfig(JpaUserDetailsService jpaUserDetailsService, BasicAuthEntryPoint authEntryPoint) {
         this.jpaUserDetailsService = jpaUserDetailsService;
+        this.basicAuthEntryPoint = authEntryPoint;
     }
 
     @Bean
@@ -44,11 +46,11 @@ public class SecurityConfig {
                         .logoutUrl(endpoint + "/logout")
                         .deleteCookies("TDOH"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, endpoint + "/users/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
                         .requestMatchers(HttpMethod.GET, endpoint + "/login").hasRole("USER")
                         .anyRequest().authenticated())
                 .userDetailsService(jpaUserDetailsService)
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .oauth2Login(Customizer.withDefaults());
