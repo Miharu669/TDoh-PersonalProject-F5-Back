@@ -50,4 +50,6 @@ public class RegisterControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(expectedResponse, response.getBody());
     }
+
+    
 }
