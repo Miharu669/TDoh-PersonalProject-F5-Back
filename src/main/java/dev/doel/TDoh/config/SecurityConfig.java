@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .deleteCookies("TDOH"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, endpoint + "/login").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, endpoint + "/login").authenticated()
                         .anyRequest().authenticated())
                 .userDetailsService(jpaUserDetailsService)
                 .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint))

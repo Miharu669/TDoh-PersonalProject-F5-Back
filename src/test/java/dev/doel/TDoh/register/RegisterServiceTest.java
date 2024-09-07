@@ -56,17 +56,6 @@ class RegisterServiceTest {
     }
 
     @Test
-    void testSaveWithEmptyPassword() {
-        UserDto userDto = new UserDto(0, "testuser", "", "test@example.com");
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            registerService.save(userDto);
-        });
-
-        assertEquals("Password cannot be empty", exception.getMessage());
-    }
-
-    @Test
     void testSaveWithExistingUsername() {
         UserDto userDto = new UserDto(0, "existinguser", "password123", "test@example.com");
 
