@@ -1,6 +1,7 @@
 package dev.doel.TDoh.config;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,10 @@ public class SecurityConfig {
 
     @Value("${api-endpoint}")
     String endpoint;
+    
+    @Value("#{'${cors.allowed-origins}'.split(',')}")
+     private List<String> allowedOrigins;
+
 
     JpaUserDetailsService jpaUserDetailsService;
     BasicAuthEntryPoint basicAuthEntryPoint;
@@ -52,10 +57,17 @@ public class SecurityConfig {
                 .userDetailsService(jpaUserDetailsService)
                 .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint))
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .oauth2Login(Customizer.withDefaults());
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/oauth2/authorization/google") 
+                        .defaultSuccessUrl(endpoint + "/login/success", true)
+                        .failureUrl(endpoint + "/login/failure"));
 
-        http.headers(header -> header.frameOptions(frame -> frame.sameOrigin()));
+                http.headers(headers -> headers
+                .frameOptions(frame -> frame.sameOrigin())
+                .addHeaderWriter((request, response) -> {
+                    response.addHeader("Content-Security-Policy", "script-src 'self' https://apis.google.com  https://accounts.google.com");
+                }));
         return http.build();
     }
 
@@ -63,13 +75,15 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));  
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    
 
     @Bean
     PasswordEncoder passwordEncoder() {
