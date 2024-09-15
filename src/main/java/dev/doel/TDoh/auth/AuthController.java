@@ -17,7 +17,7 @@ import dev.doel.TDoh.users.User;
 import dev.doel.TDoh.users.UserRepository;
 
 @RestController
-@RequestMapping(path = "${api-endpoint}")
+@RequestMapping("${api-endpoint}")
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -26,27 +26,25 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping(path = "/login")
+    @GetMapping("/login")
     public ResponseEntity<Map<String, String>> login() {
-
-        SecurityContext contextHolder = SecurityContextHolder.getContext();
-        Authentication auth = contextHolder.getAuthentication();
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = context.getAuthentication();
 
         if (auth == null || !auth.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Not authenticated"));
         }
 
         String username = auth.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        User user = userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found " + username));
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Logged");
+        response.put("username", username);
+        response.put("email", user.getEmail());
 
-        Map<String, String> json = new HashMap<String, String>();
-        json.put("message", "Logged");
-        json.put("username", auth.getName());
-        json.put("email", user.getEmail());
-
-        return ResponseEntity.status(HttpStatus.OK).body(json);
+        return ResponseEntity.ok(response);
     }
 }
+
