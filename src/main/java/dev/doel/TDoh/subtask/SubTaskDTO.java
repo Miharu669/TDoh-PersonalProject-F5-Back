@@ -9,12 +9,9 @@ import lombok.*;
 public class SubTaskDTO {
 
     private Long id;
-
     private String title;
-
     private String description;
-
     private boolean isDone;
-
     private Long taskId;
+    private Long userId;
 }

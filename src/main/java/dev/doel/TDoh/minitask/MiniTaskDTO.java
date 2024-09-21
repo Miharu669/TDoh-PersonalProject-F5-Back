@@ -15,5 +15,6 @@ public class MiniTaskDTO {
     private boolean isDone;
     private Long subTaskId;
     private Long taskId;
+    private Long userId;
 
 }

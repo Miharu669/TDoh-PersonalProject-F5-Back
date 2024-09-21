@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubTaskRepository extends JpaRepository<SubTask, Long> {
+    List<SubTask> findByTaskIdAndUserId(Long taskId, Long userId);
+    List<SubTask> findByUserId(Long userId);
     List<SubTask> findByTaskId(Long taskId);
 
 }
