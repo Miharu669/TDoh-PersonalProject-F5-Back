@@ -18,18 +18,19 @@ public class User {
     @Column(name = "id")
     private long id;
 
-    @NotBlank
-    @Size(max = 20)
+    @NotBlank(message = "Username is mandatory")
+    @Size(max = 20, message = "Username must be less than 20 characters")
     private String username;
-    @NotBlank
-    @Email
+
+    @NotBlank(message = "Email is mandatory")
+    @Email(message = "Invalid email format")
     @Column(unique = true)
     private String email;
-    @NotBlank
-    @Size(min = 6, max = 15)
+
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 6, max = 15, message = "Password must be between 6 and 15 characters")
     private String password;
 
-    @Column(unique = true)
-    private String googleId;
-
+    @Column(unique = true, nullable = true)
+    private String googleId; 
 }

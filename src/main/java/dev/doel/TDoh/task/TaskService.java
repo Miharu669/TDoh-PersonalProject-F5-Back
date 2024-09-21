@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 import dev.doel.TDoh.task.task_exceptions.TaskNotFoundException;
 import dev.doel.TDoh.users.User;
-import dev.doel.TDoh.users.UserNotFoundException;
+import dev.doel.TDoh.users.user_exceptions.UserNotFoundException;
 import dev.doel.TDoh.users.UserRepository;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package dev.doel.TDoh.users;
+package dev.doel.TDoh.users.user_exceptions;
 
 public class UserException extends RuntimeException {
 

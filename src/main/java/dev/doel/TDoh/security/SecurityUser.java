@@ -1,28 +1,24 @@
 package dev.doel.TDoh.security;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import dev.doel.TDoh.users.User;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public class SecurityUser implements UserDetails{
+@AllArgsConstructor
+@Getter
+public class SecurityUser implements UserDetails {
     
-
-    User user;
-    public SecurityUser(User user) {
-        this.user = user;
-    }
+    private final User user;
 
     @Override
     public String getPassword() {
         return user.getPassword();
-    }
-
-    
-    public String getEmail() {
-        return user.getEmail();
     }
 
     @Override
@@ -52,7 +48,6 @@ public class SecurityUser implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-Set<GrantedAuthority> authorities = new HashSet<>();
-        return authorities;
+        return Collections.emptyList(); 
     }
 }
