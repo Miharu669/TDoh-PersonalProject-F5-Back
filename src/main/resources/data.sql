@@ -27,6 +27,18 @@ CREATE TABLE IF NOT EXISTS subtasks (
     FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE
 );
 
+-- Create minitasks table
+CREATE TABLE IF NOT EXISTS minitasks (
+    minitask_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    is_done BOOLEAN DEFAULT FALSE,
+    subtask_id BIGINT NOT NULL,
+    task_id BIGINT NOT NULL,
+    FOREIGN KEY (subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE,
+    FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE
+);
+
 -- Insert a predefined user
 INSERT INTO users (username, email, password)
 VALUES ('user', 'testuser@example.com', '$2a$12$8LegtLQWe717tIPvZeivjuqKnaAs5.bm0Q05.5GrAmcKzXw2NjoUO');
@@ -46,12 +58,12 @@ INSERT INTO subtasks (title, description, is_done, task_id) VALUES
 ('Subtask 3.1', 'Description for subtask 3.1', 1, 3);
 
 -- Insert data into minitasks table
-INSERT INTO minitasks (title, description, is_done, subtask_id) VALUES
-('MiniTask 1.1.1', 'Description for miniTask 1.1.1', 0, 1),  
-('MiniTask 1.1.2', 'Description for miniTask 1.1.2', 1, 1),  
-('MiniTask 2.1.1', 'Description for miniTask 2.1.1', 0, 3),
-('MiniTask 2.2.1', 'Description for miniTask 2.2.1', 0, 4),
-('MiniTask 3.1.1', 'Description for miniTask 3.1.1', 1, 5);
+INSERT INTO minitasks (title, description, is_done, subtask_id, task_id) VALUES
+('MiniTask 1.1.1', 'Description for minitask 1.1.1', 0, 1, 1),  
+('MiniTask 1.2.1', 'Description for minitask 1.2.1', 1, 2, 1),  
+('MiniTask 2.1.1', 'Description for minitask 2.1.1', 0, 3, 2),
+('MiniTask 2.2.1', 'Description for minitask 2.2.1', 0, 4, 2),
+('MiniTask 3.1.1', 'Description for minitask 3.1.1', 1, 5, 3);
 
 -- DROP TABLE IF EXISTS subtasks;
 -- DROP TABLE IF EXISTS tasks;

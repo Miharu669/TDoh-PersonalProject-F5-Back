@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "minitask")
+@Table(name = "minitasks")
 
 public class MiniTask {
 
