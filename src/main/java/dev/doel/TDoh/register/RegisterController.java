@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import dev.doel.TDoh.users.User;
-import dev.doel.TDoh.users.UserDto;
+import dev.doel.TDoh.users.UserDTO;
 import jakarta.validation.Valid;
 
 @RestController
@@ -22,7 +22,7 @@ public class RegisterController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody UserDto newUser) {
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody UserDTO newUser) {
         Map<String, String> json = new HashMap<>();
         json.put("message", "Register successful");
 

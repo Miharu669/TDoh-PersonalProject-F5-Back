@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import dev.doel.TDoh.users.User;
-import dev.doel.TDoh.users.UserDto;
+import dev.doel.TDoh.users.UserDTO;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class RegisterControllerTest {
 
     @Test
     public void testRegisterSuccess() {
-        UserDto userDto = new UserDto();
+        UserDTO userDto = new UserDTO();
         userDto.setUsername("testuser");
         userDto.setPassword("password123");
 

@@ -1,6 +1,5 @@
 package dev.doel.TDoh.users;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -27,8 +26,10 @@ public class User {
     @Column(unique = true)
     private String email;
     @NotBlank
-    @Size( min = 6, max = 15)
+    @Size(min = 6, max = 15)
     private String password;
 
+    @Column(unique = true)
+    private String googleId;
 
 }

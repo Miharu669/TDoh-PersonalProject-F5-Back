@@ -2,7 +2,7 @@ package dev.doel.TDoh.register;
 
 import dev.doel.TDoh.encryptations.EncoderFacade;
 import dev.doel.TDoh.users.User;
-import dev.doel.TDoh.users.UserDto;
+import dev.doel.TDoh.users.UserDTO;
 import dev.doel.TDoh.users.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,8 +33,8 @@ class RegisterServiceTest {
 
     @Test
     void testSaveValidUser() {
-        UserDto userDto = new UserDto(0, "testuser", "password123", "test@example.com");
-        User savedUser = new User(1, "testuser", "test@example.com", "encodedPassword");
+        UserDTO userDto = new UserDTO(0, "testuser", "password123", "test@example.com");
+        User savedUser = new User(1, "testuser", "test@example.com", "encodedPassword", null);
 
         when(encoderFacade.decode(eq("base64"), anyString())).thenReturn("decodedPassword");
         when(encoderFacade.encode(eq("bcrypt"), anyString())).thenReturn("encodedPassword");
@@ -57,7 +57,7 @@ class RegisterServiceTest {
 
     @Test
     void testSaveWithExistingUsername() {
-        UserDto userDto = new UserDto(0, "existinguser", "password123", "test@example.com");
+        UserDTO userDto = new UserDTO(0, "existinguser", "password123", "test@example.com");
 
         when(encoderFacade.decode(eq("base64"), anyString())).thenReturn("decodedPassword");
         when(encoderFacade.encode(eq("bcrypt"), anyString())).thenReturn("encodedPassword");
@@ -72,7 +72,7 @@ class RegisterServiceTest {
 
     @Test
     void testSaveWithExistingEmail() {
-        UserDto userDto = new UserDto(0, "newuser", "password123", "existing@example.com");
+        UserDTO userDto = new UserDTO(0, "newuser", "password123", "existing@example.com");
 
         when(encoderFacade.decode(eq("base64"), anyString())).thenReturn("decodedPassword");
         when(encoderFacade.encode(eq("bcrypt"), anyString())).thenReturn("encodedPassword");

@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dev.doel.TDoh.encryptations.EncoderFacade;
 import dev.doel.TDoh.encryptations.IEncryptFacade;
 import dev.doel.TDoh.users.User;
-import dev.doel.TDoh.users.UserDto;
+import dev.doel.TDoh.users.UserDTO;
 import dev.doel.TDoh.users.UserRepository;
 
 @Service
@@ -21,12 +21,12 @@ public class RegisterService {
     }
 
     @Transactional
-    public User save(UserDto registerDto) {
+    public User save(UserDTO registerDto) {
 
         String passwordDecoded = encoderFacade.decode("base64", registerDto.getPassword());
         String passwordEncoded = encoderFacade.encode("bcrypt", passwordDecoded);
 
-        User user = new User(0, registerDto.getUsername(), registerDto.getEmail(), passwordEncoded );
+        User user = new User(0, registerDto.getUsername(), registerDto.getEmail(), passwordEncoded, passwordEncoded );
 
         if (userRepository.existsByUsername(registerDto.getUsername())) {
             throw new IllegalArgumentException("Username already taken");

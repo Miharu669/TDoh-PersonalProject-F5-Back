@@ -1,14 +1,20 @@
 package dev.doel.TDoh.task;
 
-import lombok.*;
+import java.util.List;
+
+import dev.doel.TDoh.subtask.SubTaskDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TaskDto {
+public class TaskDTO {
 
     private long id;
 

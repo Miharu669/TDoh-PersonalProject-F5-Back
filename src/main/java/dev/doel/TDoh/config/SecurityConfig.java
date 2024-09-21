@@ -29,11 +29,10 @@ public class SecurityConfig {
     String endpoint;
     
     @Value("#{'${cors.allowed-origins}'.split(',')}")
-     private List<String> allowedOrigins;
+    private List<String> allowedOrigins;
 
-
-    JpaUserDetailsService jpaUserDetailsService;
-    BasicAuthEntryPoint basicAuthEntryPoint;
+    private final JpaUserDetailsService jpaUserDetailsService;
+    private final BasicAuthEntryPoint basicAuthEntryPoint;
 
     public SecurityConfig(JpaUserDetailsService jpaUserDetailsService, BasicAuthEntryPoint authEntryPoint) {
         this.jpaUserDetailsService = jpaUserDetailsService;
@@ -44,30 +43,31 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .formLogin(form -> form.disable())
-                .logout(out -> out
-                        .logoutUrl(endpoint + "/logout")
-                        .deleteCookies("TDOH"))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, endpoint + "/login").authenticated()
-                        .anyRequest().authenticated())
-                .userDetailsService(jpaUserDetailsService)
-                .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint))
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                        .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/oauth2/authorization/google") 
-                        .defaultSuccessUrl(endpoint + "/login/success", true)
-                        .failureUrl(endpoint + "/login/failure"));
+            .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable())
+            .formLogin(form -> form.disable())
+            .logout(out -> out
+                .logoutUrl(endpoint + "/logout")
+                .deleteCookies("TDOH"))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
+                .requestMatchers(HttpMethod.GET, endpoint + "/login").authenticated()
+                .anyRequest().authenticated())
+            .userDetailsService(jpaUserDetailsService)
+            .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/oauth2/authorization/google") 
+                .defaultSuccessUrl(endpoint + "/login/success", true)
+                .failureUrl(endpoint + "/login/failure"));
 
-                http.headers(headers -> headers
-                .frameOptions(frame -> frame.sameOrigin())
-                .addHeaderWriter((request, response) -> {
-                    response.addHeader("Content-Security-Policy", "script-src 'self' https://apis.google.com  https://accounts.google.com");
-                }));
+        http.headers(headers -> headers
+            .frameOptions(frame -> frame.sameOrigin())
+            .addHeaderWriter((request, response) -> {
+                response.addHeader("Content-Security-Policy", "script-src 'self' https://apis.google.com  https://accounts.google.com");
+            }));
+
         return http.build();
     }
 
@@ -84,7 +84,6 @@ public class SecurityConfig {
         return source;
     }
     
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -94,5 +93,4 @@ public class SecurityConfig {
     public Base64Encoder base64Encoder() {
         return new Base64Encoder();
     }
-
 }

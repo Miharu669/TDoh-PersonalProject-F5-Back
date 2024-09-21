@@ -3,6 +3,7 @@ package dev.doel.TDoh.task;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.doel.TDoh.subtask.SubTask;
 import dev.doel.TDoh.users.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -13,6 +14,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "tasks")
 
 public class Task {
@@ -26,14 +28,16 @@ public class Task {
     private String title;
 
     @Size(max = 300)
-     private String description;
+    private String description;
 
+    @Builder.Default
     private boolean isDone = false;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<SubTask> subTasks = new ArrayList<>();
 
-     @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

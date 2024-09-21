@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDto {
+public class UserDTO {
 
     private long id; 
     @NotBlank(message = "Username is required")
