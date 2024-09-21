@@ -45,6 +45,14 @@ INSERT INTO subtasks (title, description, is_done, task_id) VALUES
 ('Subtask 2.2', 'Description for subtask 2.2', 0, 2),
 ('Subtask 3.1', 'Description for subtask 3.1', 1, 3);
 
+-- Insert data into minitasks table
+INSERT INTO minitasks (title, description, is_done, subtask_id) VALUES
+('MiniTask 1.1.1', 'Description for miniTask 1.1.1', 0, 1),  
+('MiniTask 1.1.2', 'Description for miniTask 1.1.2', 1, 1),  
+('MiniTask 2.1.1', 'Description for miniTask 2.1.1', 0, 3),
+('MiniTask 2.2.1', 'Description for miniTask 2.2.1', 0, 4),
+('MiniTask 3.1.1', 'Description for miniTask 3.1.1', 1, 5);
+
 -- DROP TABLE IF EXISTS subtasks;
 -- DROP TABLE IF EXISTS tasks;
 -- DROP TABLE IF EXISTS users;

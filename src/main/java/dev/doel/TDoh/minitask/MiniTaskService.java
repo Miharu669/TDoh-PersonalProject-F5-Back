@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import dev.doel.TDoh.minitask.minitask_exceptions.MiniTaskNotFoundException;
 import dev.doel.TDoh.subtask.SubTask;
 import dev.doel.TDoh.subtask.SubTaskRepository;
+import dev.doel.TDoh.task.Task;
 
 @Service
 public class MiniTaskService {
@@ -20,8 +21,12 @@ public class MiniTaskService {
 
     public MiniTaskDTO createMiniTask(MiniTaskDTO miniTaskDTO) {
         SubTask subTask = subTaskRepository.findById(miniTaskDTO.getSubTaskId())
-                .orElseThrow(() -> new MiniTaskNotFoundException("SubTask with ID " + miniTaskDTO.getSubTaskId() + " not found"));
-        MiniTask miniTask = mapToEntity(miniTaskDTO, subTask);
+                .orElseThrow(() -> new MiniTaskNotFoundException(
+                        "SubTask with ID " + miniTaskDTO.getSubTaskId() + " not found"));
+
+        Task task = subTask.getTask();
+
+        MiniTask miniTask = mapToEntity(miniTaskDTO, subTask, task);
         MiniTask savedMiniTask = miniTaskRepository.save(miniTask);
         return mapToDTO(savedMiniTask);
     }
@@ -56,13 +61,14 @@ public class MiniTaskService {
         miniTaskRepository.delete(miniTask);
     }
 
-    private MiniTask mapToEntity(MiniTaskDTO miniTaskDTO, SubTask subTask) {
+    private MiniTask mapToEntity(MiniTaskDTO miniTaskDTO, SubTask subTask, Task task) {
         return MiniTask.builder()
                 .id(miniTaskDTO.getId())
                 .title(miniTaskDTO.getTitle())
                 .description(miniTaskDTO.getDescription())
                 .isDone(miniTaskDTO.isDone())
                 .subTask(subTask)
+                .task(subTask.getTask())
                 .build();
     }
 
@@ -72,7 +78,8 @@ public class MiniTaskService {
                 .title(miniTask.getTitle())
                 .description(miniTask.getDescription())
                 .isDone(miniTask.isDone())
-                .subTaskId(miniTask.getSubTask().getId()) // Ensure subTask is not null
+                .subTaskId(miniTask.getSubTask().getId())
+                .taskId(miniTask.getTask().getId())
                 .build();
     }
 

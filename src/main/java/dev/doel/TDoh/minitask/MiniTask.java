@@ -1,6 +1,7 @@
 package dev.doel.TDoh.minitask;
 
 import dev.doel.TDoh.subtask.SubTask;
+import dev.doel.TDoh.task.Task;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,5 +30,9 @@ public class MiniTask {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subtask_id", nullable = false)
     private SubTask subTask;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id", nullable = false)
+    private Task task;
 
 }
