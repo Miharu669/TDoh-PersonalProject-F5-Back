@@ -28,7 +28,7 @@ public class User {
     private String email;
 
     @NotBlank(message = "Password is mandatory")
-    @Size(min = 6, max = 15, message = "Password must be between 6 and 15 characters")
+    // @Size(min = 6, max = 15, message = "Password must be between 6 and 15 characters")
     private String password;
 
     @Column(unique = true, nullable = true)

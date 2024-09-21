@@ -19,7 +19,7 @@ public class UserDTO {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, max = 15, message = "Password must be between 6 and 15 characters")
+    // @Size(min = 6, max = 15, message = "Password must be between 6 and 15 characters")
     private String password;
 
     @NotBlank(message = "Email is required")
