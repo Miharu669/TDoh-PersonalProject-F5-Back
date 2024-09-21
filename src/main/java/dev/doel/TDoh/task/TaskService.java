@@ -38,15 +38,15 @@ public class TaskService {
     public List<TaskDTO> getTasksForCurrentUser(Authentication authentication) {
         Long currentUserId = getCurrentAuthenticatedUserId(authentication);
         List<Task> tasks = taskRepository.findByUserId(currentUserId);
-        
+
         return tasks.stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public TaskDTO getTaskByIdForCurrentUser(Long taskId, Authentication authentication) {
         Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-        
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
@@ -69,7 +69,7 @@ public class TaskService {
 
     public TaskDTO updateTask(Long taskId, TaskDTO taskDTO, Authentication authentication) {
         Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-        
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
@@ -83,6 +83,19 @@ public class TaskService {
         Task updatedTask = taskRepository.save(task);
 
         return convertToDTO(updatedTask);
+    }
+
+    public void deleteTask(Long taskId, Authentication authentication) {
+        Long currentUserId = getCurrentAuthenticatedUserId(authentication);
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+
+        if (task.getUser().getId() != currentUserId) {
+            throw new AccessDeniedException("This task does not belong to the user");
+        }
+
+        taskRepository.delete(task);
     }
 
     private TaskDTO convertToDTO(Task task) {
@@ -104,6 +117,3 @@ public class TaskService {
                 .build();
     }
 }
-
-    
-
