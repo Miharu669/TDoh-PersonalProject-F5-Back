@@ -1,6 +1,8 @@
 package dev.doel.TDoh.users;
 
+
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 @Entity
@@ -17,7 +19,16 @@ public class User {
     @Column(name = "id")
     private long id;
 
+    @NotBlank
+    @Size(max = 20)
     private String username;
+    @NotBlank
+    @Email
+    @Column(unique = true)
     private String email;
+    @NotBlank
+    @Size( min = 6, max = 15)
     private String password;
+
+
 }
