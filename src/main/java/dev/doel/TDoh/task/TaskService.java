@@ -3,8 +3,8 @@ package dev.doel.TDoh.task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Service;
 
 import dev.doel.TDoh.task.task_exceptions.TaskNotFoundException;
 import dev.doel.TDoh.users.User;
@@ -37,23 +37,13 @@ public class TaskService {
 
     public List<TaskDTO> getTasksForCurrentUser(Authentication authentication) {
         Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-        List<Task> tasks = taskRepository.findByUserId(currentUserId);
-
-        return tasks.stream()
+        return taskRepository.findByUserId(currentUserId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public TaskDTO getTaskByIdForCurrentUser(Long taskId, Authentication authentication) {
-        Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
-
-        if (task.getUser().getId() != currentUserId) {
-            throw new AccessDeniedException("This task does not belong to the user");
-        }
-
+        Task task = validateTaskOwnership(taskId, authentication);
         return convertToDTO(task);
     }
 
@@ -68,34 +58,30 @@ public class TaskService {
     }
 
     public TaskDTO updateTask(Long taskId, TaskDTO taskDTO, Authentication authentication) {
-        Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
-
-        if (task.getUser().getId() != currentUserId) {
-            throw new AccessDeniedException("This task does not belong to the user");
-        }
-
+        Task task = validateTaskOwnership(taskId, authentication);
         task.setTitle(taskDTO.getTitle());
         task.setDescription(taskDTO.getDescription());
         task.setDone(taskDTO.isDone());
-        Task updatedTask = taskRepository.save(task);
 
+        Task updatedTask = taskRepository.save(task);
         return convertToDTO(updatedTask);
     }
 
     public void deleteTask(Long taskId, Authentication authentication) {
-        Long currentUserId = getCurrentAuthenticatedUserId(authentication);
+        Task task = validateTaskOwnership(taskId, authentication);
+        taskRepository.delete(task);
+    }
 
+    private Task validateTaskOwnership(Long taskId, Authentication authentication) {
+        Long currentUserId = getCurrentAuthenticatedUserId(authentication);
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
-        if (task.getUser().getId() != currentUserId) {
+        if (!Long.valueOf(task.getUser().getId()).equals(currentUserId)) {
             throw new AccessDeniedException("This task does not belong to the user");
         }
 
-        taskRepository.delete(task);
+        return task;
     }
 
     private TaskDTO convertToDTO(Task task) {
@@ -104,6 +90,7 @@ public class TaskService {
                 .title(task.getTitle())
                 .description(task.getDescription())
                 .isDone(task.isDone())
+                .userId(task.getUser().getId())
                 .build();
     }
 
