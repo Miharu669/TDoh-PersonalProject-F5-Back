@@ -1,6 +1,5 @@
 package dev.doel.TDoh.task;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import dev.doel.TDoh.subtask.SubTask;
@@ -23,19 +22,21 @@ public class Task {
     @Column(name = "task_id")
     private Long id;
 
-    @NotBlank
-    @Size(max = 100)
+    @NotBlank(message = "Title cannot be blank")
+    @Size(max = 100, message = "Title can have at most 100 characters")
+    @Column(nullable = false, length = 100)
     private String title;
 
-    @Size(max = 300)
+    @Size(max = 300, message = "Description can have at most 300 characters")
     private String description;
 
     @Builder.Default
+    @Column(nullable = false)
+
     private boolean isDone = false;
 
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<SubTask> subTasks = new ArrayList<>();
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<SubTask> subTasks;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

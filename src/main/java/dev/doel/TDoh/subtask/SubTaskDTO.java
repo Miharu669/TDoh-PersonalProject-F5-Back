@@ -1,6 +1,9 @@
 package dev.doel.TDoh.subtask;
 
 import lombok.*;
+import java.util.List;
+
+import dev.doel.TDoh.minitask.MiniTaskDTO;
 
 @Data
 @NoArgsConstructor
@@ -13,4 +16,5 @@ public class SubTaskDTO {
     private String description;
     private boolean isDone;
     private Long taskId;
+    private List<MiniTaskDTO> miniTasks;
 }

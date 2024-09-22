@@ -41,44 +41,51 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+    
         http
-            .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
-            .formLogin(form -> form.disable())
+            .cors(Customizer.withDefaults()) 
+            .csrf(csrf -> csrf.disable()) 
+            .formLogin(form -> form.disable()) 
             .logout(out -> out
                 .logoutUrl(endpoint + "/logout")
-                .deleteCookies("TDOH"))
+                .deleteCookies("TDOH")) 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
-                .requestMatchers(HttpMethod.GET, endpoint + "/login").authenticated()
+                .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll() 
+                .requestMatchers(HttpMethod.GET, "/oauth2/authorization/google", endpoint + "/login", endpoint + "/login/success", endpoint + "/login/failure").permitAll() 
+                .requestMatchers(HttpMethod.GET, endpoint + "/**").permitAll() 
+                .requestMatchers(HttpMethod.POST, endpoint + "/**").permitAll() 
+                .requestMatchers(HttpMethod.PUT, endpoint + "/**").permitAll() 
+                .requestMatchers(HttpMethod.DELETE, endpoint + "/**").permitAll()
                 .anyRequest().authenticated())
-            .userDetailsService(jpaUserDetailsService)
-            .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint))
+            .userDetailsService(jpaUserDetailsService) 
+            .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint)) 
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/oauth2/authorization/google") 
-                .defaultSuccessUrl(endpoint + "/login/success", true)
-                .failureUrl(endpoint + "/login/failure"));
-
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) ;
+            // .oauth2Login(oauth2 -> oauth2
+            //     .loginPage("/oauth2/authorization/google")
+            //     .defaultSuccessUrl(endpoint + "/login/success", true) 
+            //     .failureUrl(endpoint + "/login/failure"))
+            // .userInfoEndpoint(userInfo -> userInfo
+            //     .userService(oauth2UserService()));
+    
         http.headers(headers -> headers
-            .frameOptions(frame -> frame.sameOrigin())
+            .frameOptions(frame -> frame.sameOrigin()) 
             .addHeaderWriter((request, response) -> {
-                response.addHeader("Content-Security-Policy", "script-src 'self' https://apis.google.com  https://accounts.google.com");
+                response.addHeader("Content-Security-Policy", "script-src 'self' https://apis.google.com https://accounts.google.com");
             }));
-
+    
         return http.build();
     }
+    
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(allowedOrigins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));  
+        configuration.setAllowCredentials(true); 
+        configuration.setAllowedOrigins(allowedOrigins); 
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); 
+        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin")); 
+        configuration.setExposedHeaders(Arrays.asList("Authorization")); 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -86,11 +93,12 @@ public class SecurityConfig {
     
     @Bean
     PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); 
     }
 
     @Bean
     public Base64Encoder base64Encoder() {
-        return new Base64Encoder();
+        return new Base64Encoder(); 
     }
-}
+    
+} 

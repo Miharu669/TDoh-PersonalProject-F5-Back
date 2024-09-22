@@ -1,10 +1,11 @@
 package dev.doel.TDoh.subtask;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import dev.doel.TDoh.minitask.MiniTask;
+import dev.doel.TDoh.minitask.MiniTaskDTO;
 import dev.doel.TDoh.subtask.subtask_exceptions.SubTaskNotFoundException;
 import dev.doel.TDoh.task.Task;
 import dev.doel.TDoh.task.TaskRepository;
@@ -25,8 +26,6 @@ public class SubTaskService {
     @Autowired
     private UserRepository userRepository;
 
-    
-
     public SubTaskDTO createSubTask(SubTaskDTO subTaskDTO) {
         Task task = taskRepository.findById(subTaskDTO.getTaskId())
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
@@ -46,7 +45,6 @@ public class SubTaskService {
     public SubTaskDTO getSubTaskById(Long id) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
-
         return mapToDTO(subTask);
     }
 
@@ -56,23 +54,23 @@ public class SubTaskService {
 
         subTask.setTitle(subTaskDTO.getTitle());
         subTask.setDescription(subTaskDTO.getDescription());
+        boolean wasDone = subTask.isDone();
         subTask.setDone(subTaskDTO.isDone());
         SubTask updatedSubTask = subTaskRepository.save(subTask);
 
-        if (!subTask.isDone() && subTaskDTO.isDone()) {
-            addPointsToUser(subTask.getTask().getUser().getId(), 25); 
+        if (!wasDone && subTaskDTO.isDone()) {
+            addPointsToUser(subTask.getTask().getUser().getId(), 25);
         }
         return mapToDTO(updatedSubTask);
     }
 
     private void addPointsToUser(Long userId, int points) {
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-    user.setScore(user.getScore() + points);
-    userRepository.save(user);
-}
-
+        user.setScore(user.getScore() + points);
+        userRepository.save(user);
+    }
 
     public void deleteSubTask(Long id) {
         SubTask subTask = subTaskRepository.findById(id)
@@ -81,6 +79,38 @@ public class SubTaskService {
         subTaskRepository.delete(subTask);
     }
 
+    // Method to map SubTask to SubTaskDTO and include nested MiniTasks
+    private SubTaskDTO mapToDTO(SubTask subTask) {
+        // Fetch and map miniTasks related to this subTask
+        List<MiniTaskDTO> miniTaskDTOs = subTask.getMiniTasks() != null
+                ? subTask.getMiniTasks().stream()
+                    .map(this::mapMiniTaskToDTO)
+                    .toList()
+                : List.of(); // Return an empty list if there are no miniTasks
+
+        // Return the SubTaskDTO with nested miniTasks
+        return SubTaskDTO.builder()
+                .id(subTask.getId())
+                .title(subTask.getTitle())
+                .description(subTask.getDescription())
+                .isDone(subTask.isDone())
+                .taskId(subTask.getTask().getId())
+                .miniTasks(miniTaskDTOs) // Include nested miniTasks
+                .build();
+    }
+
+    // Helper method to map MiniTask entity to MiniTaskDTO
+    private MiniTaskDTO mapMiniTaskToDTO(MiniTask miniTask) {
+        return MiniTaskDTO.builder()
+                .id(miniTask.getId())
+                .title(miniTask.getTitle())
+                .description(miniTask.getDescription())
+                .isDone(miniTask.isDone())
+                .subTaskId(miniTask.getSubTask().getId())
+                .build();
+    }
+
+    // Method to map SubTaskDTO to SubTask entity
     private SubTask mapToEntity(SubTaskDTO subTaskDTO, Task task) {
         return SubTask.builder()
                 .id(subTaskDTO.getId())
@@ -88,16 +118,6 @@ public class SubTaskService {
                 .description(subTaskDTO.getDescription())
                 .isDone(subTaskDTO.isDone())
                 .task(task)
-                .build();
-    }
-
-    private SubTaskDTO mapToDTO(SubTask subTask) {
-        return SubTaskDTO.builder()
-                .id(subTask.getId())
-                .title(subTask.getTitle())
-                .description(subTask.getDescription())
-                .isDone(subTask.isDone())
-                .taskId(subTask.getTask().getId())
                 .build();
     }
 }

@@ -6,6 +6,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import dev.doel.TDoh.minitask.MiniTaskDTO;
+import dev.doel.TDoh.security.SecurityUser;
+import dev.doel.TDoh.subtask.SubTaskDTO;
 import dev.doel.TDoh.task.task_exceptions.TaskNotFoundException;
 import dev.doel.TDoh.users.User;
 import dev.doel.TDoh.users.user_exceptions.UserNotFoundException;
@@ -28,11 +31,17 @@ public class TaskService {
             throw new AccessDeniedException("No authenticated user");
         }
 
-        String googleUserId = ((Jwt) authentication.getPrincipal()).getClaim("sub");
-        User user = userRepository.findByGoogleId(googleUserId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        return user.getId();
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Jwt) {
+            String googleUserId = ((Jwt) principal).getClaim("sub");
+            User user = userRepository.findByGoogleId(googleUserId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+            return user.getId();
+        } else if (principal instanceof SecurityUser) {
+            return ((SecurityUser) principal).getUser().getId();
+        } else {
+            throw new AccessDeniedException("Invalid authentication principal");
+        }
     }
 
     public List<TaskDTO> getTasksForCurrentUser(Authentication authentication) {
@@ -59,17 +68,18 @@ public class TaskService {
 
     public TaskDTO updateTask(Long taskId, TaskDTO taskDTO, Authentication authentication) {
         Task task = validateTaskOwnership(taskId, authentication);
+        boolean wasDone = task.isDone();
+
         task.setTitle(taskDTO.getTitle());
         task.setDescription(taskDTO.getDescription());
-        boolean isDone = taskDTO.isDone();
         task.setDone(taskDTO.isDone());
 
         Task updatedTask = taskRepository.save(task);
 
-        if (!isDone &&  taskDTO.isDone()) {
-            
+        if (!wasDone && taskDTO.isDone()) {
             addPointsToUser(task.getUser().getId(), 250);
         }
+
         return convertToDTO(updatedTask);
     }
 
@@ -97,15 +107,40 @@ public class TaskService {
         return task;
     }
 
-    private TaskDTO convertToDTO(Task task) {
-        return TaskDTO.builder()
-                .id(task.getId())
-                .title(task.getTitle())
-                .description(task.getDescription())
-                .isDone(task.isDone())
-                .userId(task.getUser().getId())
-                .build();
-    }
+   private TaskDTO convertToDTO(Task task) {
+    List<SubTaskDTO> subTaskDTOs = task.getSubTasks() != null
+            ? task.getSubTasks().stream()
+                    .map(subTask -> SubTaskDTO.builder()
+                            .id(subTask.getId())
+                            .title(subTask.getTitle())
+                            .description(subTask.getDescription())
+                            .isDone(subTask.isDone())
+                            .taskId(task.getId())
+                            .miniTasks(subTask.getMiniTasks() != null
+                                    ? subTask.getMiniTasks().stream()
+                                            .map(miniTask -> MiniTaskDTO.builder()
+                                                    .id(miniTask.getId())
+                                                    .title(miniTask.getTitle())
+                                                    .description(miniTask.getDescription())
+                                                    .isDone(miniTask.isDone())
+                                                    .subTaskId(subTask.getId())
+                                                    .build())
+                                            .toList()
+                                    : List.of()) 
+                            .build())
+                    .toList()
+            : List.of();
+
+    return TaskDTO.builder()
+            .id(task.getId())
+            .title(task.getTitle())
+            .description(task.getDescription())
+            .isDone(task.isDone())
+            .userId(task.getUser().getId())
+            .subTasks(subTaskDTOs)
+            .build();
+}
+
 
     private Task convertToEntity(TaskDTO taskDTO, User user) {
         return Task.builder()
@@ -116,4 +151,5 @@ public class TaskService {
                 .user(user)
                 .build();
     }
+
 }
