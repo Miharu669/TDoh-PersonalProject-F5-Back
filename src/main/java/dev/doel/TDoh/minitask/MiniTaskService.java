@@ -1,14 +1,14 @@
 package dev.doel.TDoh.minitask;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import dev.doel.TDoh.minitask.minitask_exceptions.MiniTaskNotFoundException;
 import dev.doel.TDoh.subtask.SubTask;
 import dev.doel.TDoh.subtask.SubTaskRepository;
-import dev.doel.TDoh.task.Task;
+import dev.doel.TDoh.task.task_exceptions.TaskNotFoundException;
+import dev.doel.TDoh.users.UserRepository;
+import dev.doel.TDoh.users.user_exceptions.UserNotFoundException;
+import dev.doel.TDoh.minitask.minitask_exceptions.MiniTaskNotFoundException;
 
 @Service
 public class MiniTaskService {
@@ -19,82 +19,69 @@ public class MiniTaskService {
     @Autowired
     private SubTaskRepository subTaskRepository;
 
-    public MiniTaskDTO createMiniTask(MiniTaskDTO miniTaskDTO, Long userId) {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public MiniTaskDTO createMiniTask(MiniTaskDTO miniTaskDTO) {
         SubTask subTask = subTaskRepository.findById(miniTaskDTO.getSubTaskId())
-                .orElseThrow(() -> new MiniTaskNotFoundException(
-                        "SubTask with ID " + miniTaskDTO.getSubTaskId() + " not found"));
+                .orElseThrow(() -> new TaskNotFoundException("SubTask not found"));
 
-        Task task = subTask.getTask();
-
-        if (task.getUser().getId() != userId) {
-            throw new MiniTaskNotFoundException("Task does not belong to the user");
-        }
-
-        MiniTask miniTask = mapToEntity(miniTaskDTO, subTask, task);
+        MiniTask miniTask = mapToEntity(miniTaskDTO, subTask);
         MiniTask savedMiniTask = miniTaskRepository.save(miniTask);
         return mapToDTO(savedMiniTask);
     }
 
-    public List<MiniTaskDTO> getMiniTasksBySubTaskId(Long subTaskId, Long userId) {
-        List<MiniTask> miniTasks = miniTaskRepository.findBySubTask_IdAndSubTask_Task_User_Id(subTaskId, userId);
+    public List<MiniTaskDTO> getMiniTasksBySubTaskId(Long subTaskId) {
+        List<MiniTask> miniTasks = miniTaskRepository.findBySubTaskId(subTaskId);
         return miniTasks.stream()
                 .map(this::mapToDTO)
                 .toList();
     }
 
-    public List<MiniTaskDTO> getMiniTasksByTaskId(Long taskId, Long userId) {
-        List<MiniTask> miniTasks = miniTaskRepository.findBySubTask_Task_IdAndSubTask_Task_User_Id(taskId, userId);
-        return miniTasks.stream()
-                .map(this::mapToDTO)
-                .toList();
-    }
-
-    public MiniTaskDTO getMiniTaskById(Long id, Long userId) {
+    public MiniTaskDTO getMiniTaskById(Long id) {
         MiniTask miniTask = miniTaskRepository.findById(id)
-                .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask with ID " + id + " not found"));
-
-        if (miniTask.getTask().getUser().getId() != userId) { 
-            throw new MiniTaskNotFoundException("MiniTask does not belong to the user");
-        }
-
+                .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask not found"));
         return mapToDTO(miniTask);
     }
 
-    public MiniTaskDTO updateMiniTask(Long id, MiniTaskDTO miniTaskDTO, Long userId) {
+    public MiniTaskDTO updateMiniTask(Long id, MiniTaskDTO miniTaskDTO) {
         MiniTask miniTask = miniTaskRepository.findById(id)
-                .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask with ID " + id + " not found"));
+                .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask not found"));
 
-       
-        if (miniTask.getTask().getUser().getId() != userId) { 
-            throw new MiniTaskNotFoundException("MiniTask does not belong to the user");
-        }
-
+        boolean isDone = miniTask.isDone();
         miniTask.setTitle(miniTaskDTO.getTitle());
         miniTask.setDescription(miniTaskDTO.getDescription());
         miniTask.setDone(miniTaskDTO.isDone());
         MiniTask updatedMiniTask = miniTaskRepository.save(miniTask);
+
+        if (!isDone && miniTaskDTO.isDone()) {
+            addPointsToUser(miniTask.getSubTask().getTask().getUser().getId(), 5); 
+        }
+
         return mapToDTO(updatedMiniTask);
     }
 
-    public void deleteMiniTask(Long id, Long userId) {
+    public void deleteMiniTask(Long id) {
         MiniTask miniTask = miniTaskRepository.findById(id)
-                .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask with ID " + id + " not found"));
-
-        if (miniTask.getTask().getUser().getId() != userId) {
-            throw new MiniTaskNotFoundException("MiniTask does not belong to the user");
-        }
-
+                .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask not found"));
         miniTaskRepository.delete(miniTask);
     }
 
-    private MiniTask mapToEntity(MiniTaskDTO miniTaskDTO, SubTask subTask, Task task) {
+    private void addPointsToUser(Long userId, int points) {
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.setScore(user.getScore() + points);
+        userRepository.save(user);
+    }
+
+    private MiniTask mapToEntity(MiniTaskDTO miniTaskDTO, SubTask subTask) {
         return MiniTask.builder()
                 .id(miniTaskDTO.getId())
                 .title(miniTaskDTO.getTitle())
                 .description(miniTaskDTO.getDescription())
                 .isDone(miniTaskDTO.isDone())
                 .subTask(subTask)
-                .task(task)
                 .build();
     }
 
@@ -105,8 +92,6 @@ public class MiniTaskService {
                 .description(miniTask.getDescription())
                 .isDone(miniTask.isDone())
                 .subTaskId(miniTask.getSubTask().getId())
-                .taskId(miniTask.getTask().getId())
                 .build();
     }
-
 }
