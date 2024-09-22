@@ -26,7 +26,7 @@ public class RegisterService {
         String passwordDecoded = encoderFacade.decode("base64", registerDto.getPassword());
         String passwordEncoded = encoderFacade.encode("bcrypt", passwordDecoded);
 
-        User user = new User(0, registerDto.getUsername(), registerDto.getEmail(), passwordEncoded, passwordEncoded );
+        User user = new User(0, registerDto.getUsername(), registerDto.getEmail(), passwordEncoded, passwordEncoded, 0 );
 
         if (userRepository.existsByUsername(registerDto.getUsername())) {
             throw new IllegalArgumentException("Username already taken");

@@ -1,7 +1,6 @@
 package dev.doel.TDoh.subtask;
 
 import dev.doel.TDoh.task.Task;
-import dev.doel.TDoh.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,7 +30,4 @@ public class SubTask {
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 }

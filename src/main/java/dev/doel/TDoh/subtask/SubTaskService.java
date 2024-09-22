@@ -9,6 +9,9 @@ import dev.doel.TDoh.subtask.subtask_exceptions.SubTaskNotFoundException;
 import dev.doel.TDoh.task.Task;
 import dev.doel.TDoh.task.TaskRepository;
 import dev.doel.TDoh.task.task_exceptions.TaskNotFoundException;
+import dev.doel.TDoh.users.User;
+import dev.doel.TDoh.users.UserRepository;
+import dev.doel.TDoh.users.user_exceptions.UserNotFoundException;
 
 @Service
 public class SubTaskService {
@@ -19,60 +22,61 @@ public class SubTaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public SubTaskDTO createSubTask(SubTaskDTO subTaskDTO, Long userId) {
+    @Autowired
+    private UserRepository userRepository;
+
+    
+
+    public SubTaskDTO createSubTask(SubTaskDTO subTaskDTO) {
         Task task = taskRepository.findById(subTaskDTO.getTaskId())
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
-
-        if (task.getUser().getId() != userId) {
-            throw new TaskNotFoundException("Task does not belong to the user");
-        }
 
         SubTask subTask = mapToEntity(subTaskDTO, task);
         SubTask savedSubTask = subTaskRepository.save(subTask);
         return mapToDTO(savedSubTask);
     }
 
-    public List<SubTaskDTO> getSubTasksByTaskId(Long taskId, Long userId) {
+    public List<SubTaskDTO> getSubTasksByTaskId(Long taskId) {
         List<SubTask> subTasks = subTaskRepository.findByTaskId(taskId);
         return subTasks.stream()
-                .filter(subTask -> Long.valueOf(subTask.getTask().getUser().getId()).equals(userId)) 
                 .map(this::mapToDTO)
                 .toList();
     }
 
-    public SubTaskDTO getSubTaskById(Long id, Long userId) {
+    public SubTaskDTO getSubTaskById(Long id) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
-
-        if (!Long.valueOf(subTask.getTask().getUser().getId()).equals(userId)) { 
-            throw new SubTaskNotFoundException("SubTask does not belong to the user");
-        }
 
         return mapToDTO(subTask);
     }
 
-    public SubTaskDTO updateSubTask(Long id, SubTaskDTO subTaskDTO, Long userId) {
+    public SubTaskDTO updateSubTask(Long id, SubTaskDTO subTaskDTO) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
-
-        if (!Long.valueOf(subTask.getTask().getUser().getId()).equals(userId)) { 
-            throw new SubTaskNotFoundException("SubTask does not belong to the user");
-        }
 
         subTask.setTitle(subTaskDTO.getTitle());
         subTask.setDescription(subTaskDTO.getDescription());
         subTask.setDone(subTaskDTO.isDone());
         SubTask updatedSubTask = subTaskRepository.save(subTask);
+
+        if (!subTask.isDone() && subTaskDTO.isDone()) {
+            addPointsToUser(subTask.getTask().getUser().getId(), 25); 
+        }
         return mapToDTO(updatedSubTask);
     }
 
-    public void deleteSubTask(Long id, Long userId) {
+    private void addPointsToUser(Long userId, int points) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+    user.setScore(user.getScore() + points);
+    userRepository.save(user);
+}
+
+
+    public void deleteSubTask(Long id) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
-
-        if (!Long.valueOf(subTask.getTask().getUser().getId()).equals(userId)) { 
-            throw new SubTaskNotFoundException("SubTask does not belong to the user");
-        }
 
         subTaskRepository.delete(subTask);
     }
@@ -94,7 +98,6 @@ public class SubTaskService {
                 .description(subTask.getDescription())
                 .isDone(subTask.isDone())
                 .taskId(subTask.getTask().getId())
-                .userId(subTask.getTask().getUser().getId())
                 .build();
     }
 }

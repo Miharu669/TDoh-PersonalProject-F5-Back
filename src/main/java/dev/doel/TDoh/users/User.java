@@ -28,9 +28,13 @@ public class User {
     private String email;
 
     @NotBlank(message = "Password is mandatory")
-    // @Size(min = 6, max = 15, message = "Password must be between 6 and 15 characters")
     private String password;
 
     @Column(unique = true, nullable = true)
     private String googleId; 
+
+    @Builder.Default
+    @Column(name = "score", nullable = false)
+    private int score = 0;
+
 }

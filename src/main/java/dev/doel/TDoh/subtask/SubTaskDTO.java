@@ -13,5 +13,4 @@ public class SubTaskDTO {
     private String description;
     private boolean isDone;
     private Long taskId;
-    private Long userId;
 }

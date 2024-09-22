@@ -61,10 +61,23 @@ public class TaskService {
         Task task = validateTaskOwnership(taskId, authentication);
         task.setTitle(taskDTO.getTitle());
         task.setDescription(taskDTO.getDescription());
+        boolean isDone = taskDTO.isDone();
         task.setDone(taskDTO.isDone());
 
         Task updatedTask = taskRepository.save(task);
+
+        if (!isDone &&  taskDTO.isDone()) {
+            
+            addPointsToUser(task.getUser().getId(), 250);
+        }
         return convertToDTO(updatedTask);
+    }
+
+    private void addPointsToUser(Long userId, int points) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.setScore(user.getScore() + points);
+        userRepository.save(user);
     }
 
     public void deleteTask(Long taskId, Authentication authentication) {
