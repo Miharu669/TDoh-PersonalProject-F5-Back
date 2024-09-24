@@ -38,8 +38,8 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     public SecurityConfig(JpaUserDetailsService jpaUserDetailsService, BasicAuthEntryPoint basicAuthEntryPoint,
-                          CustomOAuth2UserService customOAuth2UserService,
-                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+            CustomOAuth2UserService customOAuth2UserService,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jpaUserDetailsService = jpaUserDetailsService;
         this.basicAuthEntryPoint = basicAuthEntryPoint;
         this.customOAuth2UserService = customOAuth2UserService;
@@ -49,36 +49,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
-            .formLogin(form -> form.disable())
-            .logout(out -> out
-                .logoutUrl(endpoint + "/logout")
-                .deleteCookies("TDOH")
-                .logoutSuccessUrl("/")) 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
-                .requestMatchers(
-                    "/oauth2/authorization/google",
-                    "/login",
-                    "/login/oauth2/code/google",
-                    "/login/success",
-                    "/login/failure").permitAll()
-                .anyRequest().authenticated())
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/oauth2/authorization/google") 
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService)) 
-                .successHandler(oAuth2LoginSuccessHandler) 
-                .failureUrl(endpoint + "/auth/login/failure") 
-                .failureHandler((request, response, exception) -> {
-                    response.sendRedirect(endpoint + "/auth/login/failure");
-                }))
-            .exceptionHandling(exception -> exception
-                .authenticationEntryPoint(basicAuthEntryPoint)) 
-            .userDetailsService(jpaUserDetailsService)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
+                .logout(out -> out
+                        .logoutUrl(endpoint + "/logout")
+                        .deleteCookies("TDOH")
+                        .logoutSuccessUrl("/"))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
+
+                        .requestMatchers(
+                                "/oauth2/authorization/google",
+                                "/login",
+                                "/login/oauth2/code/google",
+                                "/login/success",
+                                "/login/failure")
+                        .permitAll()
+                        .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/oauth2/authorization/google")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureUrl(endpoint + "/auth/login/failure")
+                        .failureHandler((request, response, exception) -> {
+                            response.sendRedirect(endpoint + "/auth/login/failure");
+                        }))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(basicAuthEntryPoint))
+                .userDetailsService(jpaUserDetailsService)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
         return http.build();
     }
@@ -86,7 +88,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(allowedOrigins); 
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
