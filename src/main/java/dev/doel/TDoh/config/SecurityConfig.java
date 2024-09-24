@@ -20,85 +20,89 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import dev.doel.TDoh.encryptations.base64.Base64Encoder;
 import dev.doel.TDoh.security.JpaUserDetailsService;
+import dev.doel.TDoh.auth.CustomOAuth2UserService;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Value("${api-endpoint}")
-    String endpoint;
-    
+    private String endpoint;
+
     @Value("#{'${cors.allowed-origins}'.split(',')}")
     private List<String> allowedOrigins;
 
     private final JpaUserDetailsService jpaUserDetailsService;
     private final BasicAuthEntryPoint basicAuthEntryPoint;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    public SecurityConfig(JpaUserDetailsService jpaUserDetailsService, BasicAuthEntryPoint authEntryPoint) {
+    public SecurityConfig(JpaUserDetailsService jpaUserDetailsService, BasicAuthEntryPoint basicAuthEntryPoint,
+                          CustomOAuth2UserService customOAuth2UserService,
+                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jpaUserDetailsService = jpaUserDetailsService;
-        this.basicAuthEntryPoint = authEntryPoint;
+        this.basicAuthEntryPoint = basicAuthEntryPoint;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    
         http
-            .cors(Customizer.withDefaults()) 
-            .csrf(csrf -> csrf.disable()) 
-            .formLogin(form -> form.disable()) 
+            .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable())
+            .formLogin(form -> form.disable())
             .logout(out -> out
                 .logoutUrl(endpoint + "/logout")
-                .deleteCookies("TDOH")) 
+                .deleteCookies("TDOH")
+                .logoutSuccessUrl("/")) 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll() 
-                .requestMatchers(HttpMethod.GET, "/oauth2/authorization/google", endpoint + "/login", endpoint + "/login/success", endpoint + "/login/failure").permitAll() 
-                .requestMatchers(HttpMethod.GET, endpoint + "/**").permitAll() 
-                .requestMatchers(HttpMethod.POST, endpoint + "/**").permitAll() 
-                .requestMatchers(HttpMethod.PUT, endpoint + "/**").permitAll() 
-                .requestMatchers(HttpMethod.DELETE, endpoint + "/**").permitAll()
+                .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
+                .requestMatchers(
+                    "/oauth2/authorization/google",
+                    "/login",
+                    "/login/oauth2/code/google",
+                    "/login/success",
+                    "/login/failure").permitAll()
                 .anyRequest().authenticated())
-            .userDetailsService(jpaUserDetailsService) 
-            .httpBasic(basic -> basic.authenticationEntryPoint(basicAuthEntryPoint)) 
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/oauth2/authorization/google") 
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)) 
+                .successHandler(oAuth2LoginSuccessHandler) 
+                .failureUrl(endpoint + "/auth/login/failure") 
+                .failureHandler((request, response, exception) -> {
+                    response.sendRedirect(endpoint + "/auth/login/failure");
+                }))
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(basicAuthEntryPoint)) 
+            .userDetailsService(jpaUserDetailsService)
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) ;
-            // .oauth2Login(oauth2 -> oauth2
-            //     .loginPage("/oauth2/authorization/google")
-            //     .defaultSuccessUrl(endpoint + "/login/success", true) 
-            //     .failureUrl(endpoint + "/login/failure"))
-            // .userInfoEndpoint(userInfo -> userInfo
-            //     .userService(oauth2UserService()));
-    
-        http.headers(headers -> headers
-            .frameOptions(frame -> frame.sameOrigin()) 
-            .addHeaderWriter((request, response) -> {
-                response.addHeader("Content-Security-Policy", "script-src 'self' https://apis.google.com https://accounts.google.com");
-            }));
-    
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+
         return http.build();
     }
-    
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(true); 
         configuration.setAllowedOrigins(allowedOrigins); 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); 
-        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin")); 
-        configuration.setExposedHeaders(Arrays.asList("Authorization")); 
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-    
+
     @Bean
     PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); 
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public Base64Encoder base64Encoder() {
-        return new Base64Encoder(); 
+        return new Base64Encoder();
     }
-    
-} 
+}
