@@ -6,8 +6,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -45,45 +46,91 @@ public class SecurityConfig {
         this.customOAuth2UserService = customOAuth2UserService;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+ @Bean
+    @Order(1) 
+    public SecurityFilterChain basicAuthFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .formLogin(form -> form.disable())
-                .logout(out -> out
-                        .logoutUrl(endpoint + "/logout")
-                        .deleteCookies("TDOH")
-                        .logoutSuccessUrl("/"))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
-
-                        .requestMatchers(
-                                "/oauth2/authorization/google",
-                                "/login",
-                                "/login/oauth2/code/google",
-                                "/login/success",
-                                "/login/failure")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/oauth2/authorization/google")
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureUrl(endpoint + "/auth/login/failure")
-                        .failureHandler((request, response, exception) -> {
-                            response.sendRedirect(endpoint + "/auth/login/failure");
-                        }))
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(basicAuthEntryPoint))
-                .userDetailsService(jpaUserDetailsService)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+            .securityMatcher(request -> {
+                String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+                return auth != null && auth.startsWith("Basic");
+            })
+            .authorizeHttpRequests(authorize -> authorize
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()  
+            .requestMatchers(HttpMethod.GET, "/auth/login").authenticated()
+                .anyRequest().authenticated()
+            )
+            .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(basicAuthEntryPoint))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .userDetailsService(jpaUserDetailsService);
 
         return http.build();
     }
+
+    @Bean
+    @Order(2) 
+    public SecurityFilterChain oauth2FilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(authorize -> authorize
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login**").permitAll()
+                .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/oauth2/authorization/google")
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService))
+                .successHandler(oAuth2LoginSuccessHandler)
+                .failureUrl("/auth/login/failure")
+            )
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(basicAuthEntryPoint));
+
+        
+
+        return http.build();
+    }
+//     @Bean
+//     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//         http
+//                 .cors(Customizer.withDefaults())
+//                 .csrf(csrf -> csrf.disable())
+//                 .formLogin(form -> form.disable())
+//                 .logout(out -> out
+//                         .logoutUrl(endpoint + "/logout")
+//                         .deleteCookies("TDOH")
+//                         .logoutSuccessUrl("/"))
+//                 .authorizeHttpRequests(auth -> auth
+//                         .requestMatchers(HttpMethod.POST, endpoint + "/register").permitAll()
+// .requestMatchers(HttpMethod.GET, endpoint + "/tasks").authenticated()
+//                         .requestMatchers(
+//                                 "/oauth2/authorization/google",
+//                                 "/login",
+//                                 "/login/oauth2/code/google",
+//                                 "/login/success",
+//                                 "/login/failure")
+//                         .permitAll()
+//                         .anyRequest().authenticated())
+//                 .oauth2Login(oauth2 -> oauth2
+//                         .loginPage("/oauth2/authorization/google")
+//                         .userInfoEndpoint(userInfo -> userInfo
+//                                 .userService(customOAuth2UserService))
+//                         .successHandler(oAuth2LoginSuccessHandler)
+//                         .failureUrl(endpoint + "/auth/login/failure")
+//                         .failureHandler((request, response, exception) -> {
+//                             response.sendRedirect(endpoint + "/auth/login/failure");
+//                         }))
+//                 .exceptionHandling(exception -> exception
+//                         .authenticationEntryPoint(basicAuthEntryPoint))
+//                 .userDetailsService(jpaUserDetailsService)
+//                 .sessionManagement(session -> session
+//                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+
+//         return http.build();
+//     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
