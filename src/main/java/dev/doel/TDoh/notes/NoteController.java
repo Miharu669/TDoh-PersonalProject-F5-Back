@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/notes")
+@RequestMapping("${api-endpoint}/notes")
 @RequiredArgsConstructor
 public class NoteController {
 
@@ -28,4 +28,18 @@ public class NoteController {
         NoteDTO createdNote = noteService.createNote(userId, noteDTO);
         return ResponseEntity.ok(createdNote);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<NoteDTO> updateNote(@PathVariable Long id, @RequestBody NoteDTO noteDTO) {
+        NoteDTO updatedNote = noteService.updateNoteById(id, noteDTO);
+
+        return ResponseEntity.ok(updatedNote);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNoteById(@PathVariable Long id) {
+        noteService.deleteNoteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
