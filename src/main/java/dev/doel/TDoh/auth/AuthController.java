@@ -22,7 +22,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login/oauth2/idToken")
-    public ResponseEntity<User> authenticateUser(@RequestParam("idToken") String idToken) {
+    public ResponseEntity<User> authenticateUser(@RequestHeader("idToken") String idToken) {
         User user = authService.authenticateUser(idToken);
         return ResponseEntity.ok(user);
     }
@@ -55,4 +55,5 @@ public class AuthController {
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         authService.refreshToken(request, response);
     }
+
 }

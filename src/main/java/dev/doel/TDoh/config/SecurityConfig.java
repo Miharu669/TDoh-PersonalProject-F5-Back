@@ -26,85 +26,98 @@ import dev.doel.TDoh.auth.CustomOAuth2UserService;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${api-endpoint}")
-    private String endpoint;
+        @Value("${api-endpoint}")
+        private String endpoint;
 
-    private static final String[] WHITE_LIST_URL = {
-            "/api/v1/auth/**",
-            "/api/v1/tasks/**",
-                "/api/v1/notes/**",
+        private static final String[] WHITE_LIST_URL = {
+                        "/api/v1/auth/**",
+                        "/api/v1/tasks/**",
+                        "/api/v1/notes/**",
+                        "/api/v1//oauth2/**",
+                        "/api/v1/auth/login/oauth2/**",
 
-    };
+        };
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider;
-    private final LogoutHandler logoutHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+        private final JwtAuthenticationFilter jwtAuthFilter;
+        private final AuthenticationProvider authenticationProvider;
+        private final LogoutHandler logoutHandler;
+        private final CustomOAuth2UserService customOAuth2UserService;
+        private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    public SecurityConfig(
-            CustomOAuth2UserService customOAuth2UserService,
-            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-            JwtAuthenticationFilter jwtAuthFilter,
-            AuthenticationProvider authenticationProvider,
-            LogoutHandler logoutHandler) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
-        this.jwtAuthFilter = jwtAuthFilter;
-        this.authenticationProvider = authenticationProvider;
-        this.logoutHandler = logoutHandler;
-    }
+        public SecurityConfig(
+                        CustomOAuth2UserService customOAuth2UserService,
+                        OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+                        JwtAuthenticationFilter jwtAuthFilter,
+                        AuthenticationProvider authenticationProvider,
+                        LogoutHandler logoutHandler) {
+                this.customOAuth2UserService = customOAuth2UserService;
+                this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+                this.jwtAuthFilter = jwtAuthFilter;
+                this.authenticationProvider = authenticationProvider;
+                this.logoutHandler = logoutHandler;
+        }
 
-    @Bean
-    @Order(1)
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfiguration()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req -> req.requestMatchers(WHITE_LIST_URL)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .logout(logout -> logout.logoutUrl("/api/v1/auth/logout")
-                        .addLogoutHandler(logoutHandler)
-                        .logoutSuccessHandler(
-                                (request, response, authentication) -> SecurityContextHolder.clearContext()));
+        @Bean
+        @Order(1)
+        public SecurityFilterChain oauth2FilterChain(HttpSecurity http) throws Exception {
+                http
+                                .authorizeHttpRequests(authorize -> authorize
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                                .requestMatchers("/oauth2/**", "/login**").permitAll()
+                                                .requestMatchers("/api/v1/auth/login/oauth2/idToken").permitAll()  // Ensure this is bypassed
 
-        return http.build();
-    }
+                                                .anyRequest().authenticated())
+                                .oauth2Login(oauth2 -> oauth2
+                                                .loginPage("/oauth2/authorization/google")
+                                                .userInfoEndpoint(userInfo -> userInfo
+                                                                .userService(customOAuth2UserService))
+                                                .successHandler(oAuth2LoginSuccessHandler)
+                                                .failureUrl("/auth/login/failure"))
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
-    @Bean
-    @Order(2)
-    public SecurityFilterChain oauth2FilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/oauth2/**", "/login**").permitAll()
-                        .anyRequest().authenticated())
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/oauth2/authorization/google")
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureUrl("/auth/login/failure"))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+                return http.build();
+        }
 
-        return http.build();
-    }
+        @Bean
+        @Order(2)
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .cors(cors -> cors.configurationSource(corsConfiguration()))
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authorizeHttpRequests(req -> req.requestMatchers(WHITE_LIST_URL)
+                                                .permitAll()
+                                                .anyRequest()
+                                                .authenticated())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authenticationProvider(authenticationProvider)
+                                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                                .logout(logout -> logout.logoutUrl("/api/v1/auth/logout")
+                                                .addLogoutHandler(logoutHandler)
+                                                .logoutSuccessHandler(
+                                                                (request, response,
+                                                                                authentication) -> SecurityContextHolder
+                                                                                                .clearContext()));
 
-    @Bean
-    public CorsConfigurationSource corsConfiguration() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+                return http.build();
+        }
+
+        @Bean
+        public CorsConfigurationSource corsConfiguration() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowCredentials(true);
+                configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers for testing
+                configuration.setAllowedOrigins(Arrays.asList("*")); // Allow all origins for testing
+
+                configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept",
+                                "X-Requested-With", "idToken"));
+                configuration.setExposedHeaders(Arrays.asList("Authorization", "idToken"));
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 }
