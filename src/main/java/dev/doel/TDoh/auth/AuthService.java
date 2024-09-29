@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -162,7 +163,7 @@ public class AuthService {
     }
 
     private void revokeAllUserTokens(User user) {
-        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+        List<Token> validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
         if (validUserTokens.isEmpty()) return;
         validUserTokens.forEach(token -> {
             token.setExpired(true);

@@ -24,30 +24,30 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private long id;
+    @Column(name = "user_id")
+    private Long id;
 
     @NotBlank(message = "Email is mandatory")
     @Email(message = "Invalid email format")
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @NotBlank(message = "Password is mandatory")
     private String password;
 
     @Column(unique = true, nullable = true)
-    private String googleId; 
+    private String googleId;
 
     @Builder.Default
-    @Column(name = "score", nullable = false)
+    @Column(nullable = false)
     private int score = 0;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Token> tokens;
-
 
     @Override
     public String getPassword() {
@@ -83,5 +83,4 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
     }
-
 }
