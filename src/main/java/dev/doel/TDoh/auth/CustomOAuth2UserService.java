@@ -28,7 +28,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String userId = oAuth2User.getAttribute("sub");
         String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
 
         Optional<User> userOptional = userRepository.findByGoogleId(userId);
         if (userOptional.isEmpty()) {
@@ -41,7 +40,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } else {
             user = new User();
             user.setEmail(email);
-            user.setUsername(name);
             user.setGoogleId(userId);
             user.setScore(0);
             userRepository.save(user);

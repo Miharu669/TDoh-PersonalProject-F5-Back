@@ -1,10 +1,15 @@
 package dev.doel.TDoh.users;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import dev.doel.TDoh.users.user_exceptions.UserNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
+
 public class UserService {
 
     @Autowired
@@ -42,5 +47,9 @@ public class UserService {
     
     public void updateUserScore(Long userId, int points) {
         addPoints(userId, points);
+    }
+
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
     }
 }
