@@ -6,6 +6,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.doel.TDoh.users.Role;
 import dev.doel.TDoh.users.User;
 import dev.doel.TDoh.users.UserRepository;
 import dev.doel.TDoh.token.Token;
@@ -109,21 +110,29 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already in use");
         }
+    
+        Role defaultRole = Role.USER;
+    
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .role(defaultRole)  
                 .build();
+    
         User savedUser = userRepository.save(user);
-
+    
         String jwtToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         saveUserToken(savedUser, jwtToken);
+        
         return AuthResponse.builder()
                 .id(user.getId())
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
                 .build();
     }
+    
+    
 
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);

@@ -34,6 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
     if (request.getServletPath().contains("/api/v1/auth")) {
+      System.out.println("JWT filter bypassed for path: " + request.getServletPath());
+
       filterChain.doFilter(request, response);
       return;
     }
@@ -41,12 +43,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     final String jwt;
     final String userEmail;
     if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+      System.out.println("No JWT provided, proceeding without authentication");
       filterChain.doFilter(request, response);
       return;
     }
     jwt = authHeader.substring(7);
     userEmail = jwtService.extractUsername(jwt);
     if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+      System.out.println("Validating JWT for user: " + userEmail);
+
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
       var isTokenValid = tokenRepository.findByToken(jwt)
           .map(t -> !t.isExpired() && !t.isRevoked())
