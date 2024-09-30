@@ -35,8 +35,6 @@ public class User implements UserDetails {
     @NotBlank(message = "Password is mandatory")
     private String password;
 
-    @Column(unique = true, nullable = true)
-    private String googleId;
 
     @Builder.Default
     @Column(nullable = false)
