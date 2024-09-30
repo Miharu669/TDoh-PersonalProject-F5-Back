@@ -6,13 +6,13 @@ package dev.doel.TDoh.auth;
 // import com.google.api.client.json.gson.GsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import dev.doel.TDoh.users.Role;
 import dev.doel.TDoh.users.User;
 import dev.doel.TDoh.users.UserRepository;
 import dev.doel.TDoh.token.Token;
 import dev.doel.TDoh.token.TokenRepository;
 import dev.doel.TDoh.token.TokenType;
 import dev.doel.TDoh.config.JwtService;
+import dev.doel.TDoh.role.Role;
 // import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

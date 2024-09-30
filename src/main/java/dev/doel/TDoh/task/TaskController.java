@@ -25,36 +25,36 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskDTO>> getAllTasks(Authentication authentication) {
-        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  // Get user ID from JWT
-        List<TaskDTO> tasks = taskService.getAllTasksForUser(userId);  // Fetch tasks for the authenticated user
+        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  
+        List<TaskDTO> tasks = taskService.getAllTasksForUser(userId);  
         return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id, Authentication authentication) {
-        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  // Get user ID from JWT
-        TaskDTO task = taskService.getTaskByIdForUser(id, userId);  // Fetch task for the authenticated user
+        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  
+        TaskDTO task = taskService.getTaskByIdForUser(id, userId);  
         return ResponseEntity.ok(task);
     }
 
     @PostMapping
     public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO, Authentication authentication) {
-        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  // Get user ID from JWT
-        TaskDTO createdTask = taskService.createTaskForUser(taskDTO, userId);  // Create task for the authenticated user
+        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  
+        TaskDTO createdTask = taskService.createTaskForUser(taskDTO, userId); 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<TaskDTO> updateTask(@PathVariable Long id, @Valid @RequestBody TaskDTO taskDTO, Authentication authentication) {
-        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  // Get user ID from JWT
-        TaskDTO updatedTask = taskService.updateTaskForUser(id, taskDTO, userId);  // Update task for the authenticated user
+        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  
+        TaskDTO updatedTask = taskService.updateTaskForUser(id, taskDTO, userId);  
         return ResponseEntity.ok(updatedTask);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id, Authentication authentication) {
-        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  // Get user ID from JWT
-        taskService.deleteTaskForUser(id, userId);  // Delete task for the authenticated user
+        Long userId = taskService.getCurrentAuthenticatedUserId(authentication);  
+        taskService.deleteTaskForUser(id, userId);  
         return ResponseEntity.noContent().build();
     }
 }

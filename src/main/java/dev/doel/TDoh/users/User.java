@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import dev.doel.TDoh.role.Role;
 import dev.doel.TDoh.token.Token;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
