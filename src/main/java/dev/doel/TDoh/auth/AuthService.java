@@ -1,9 +1,9 @@
 package dev.doel.TDoh.auth;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
+// import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+// import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+// import com.google.api.client.http.javanet.NetHttpTransport;
+// import com.google.api.client.json.gson.GsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.doel.TDoh.users.Role;
@@ -13,11 +13,11 @@ import dev.doel.TDoh.token.Token;
 import dev.doel.TDoh.token.TokenRepository;
 import dev.doel.TDoh.token.TokenType;
 import dev.doel.TDoh.config.JwtService;
-import jakarta.annotation.PostConstruct;
+// import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,23 +25,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
+// import java.security.GeneralSecurityException;
+// import java.util.Collections;
+// import java.util.Optional;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    @Value("${GOOGLE_CLIENT_ID}")
-    private String clientId;
+    // @Value("${GOOGLE_CLIENT_ID}")
+    // private String clientId;
 
-    @Value("${GOOGLE_CLIENT_SECRET}")
-    private String clientSecret;
+    // @Value("${GOOGLE_CLIENT_SECRET}")
+    // private String clientSecret;
 
-    @Value("${GOOGLE_REDIRECT_URI}")
-    private String redirectUri;
+    // @Value("${GOOGLE_REDIRECT_URI}")
+    // private String redirectUri;
 
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
@@ -49,63 +49,42 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public User authenticateUser(String idTokenString) {
-        try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                    .setAudience(Collections.singletonList(clientId))
-                    .build();
+    // public User authenticateUser(String idTokenString) {
+    //     try {
+    //         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+    //                 .setAudience(Collections.singletonList(clientId))
+    //                 .build();
 
-            GoogleIdToken idToken = verifier.verify(idTokenString);
-            if (idToken != null) {
-                GoogleIdToken.Payload payload = idToken.getPayload();
-                String userId = payload.getSubject();
-                String email = payload.getEmail();
+    //         GoogleIdToken idToken = verifier.verify(idTokenString);
+    //         if (idToken != null) {
+    //             GoogleIdToken.Payload payload = idToken.getPayload();
+    //             String userId = payload.getSubject();
+    //             String email = payload.getEmail();
 
-                Optional<User> userOptional = userRepository.findByGoogleId(userId);
-                if (userOptional.isEmpty()) {
-                    userOptional = userRepository.findByEmail(email);
-                }
+    //             Optional<User> userOptional = userRepository.findByGoogleId(userId);
+    //             if (userOptional.isEmpty()) {
+    //                 userOptional = userRepository.findByEmail(email);
+    //             }
 
-                User user;
-                if (userOptional.isPresent()) {
-                    user = userOptional.get();
-                } else {
-                    user = new User();
-                    user.setEmail(email);
-                    user.setGoogleId(userId);
-                    user.setScore(0);
-                    userRepository.save(user);
-                }
+    //             User user;
+    //             if (userOptional.isPresent()) {
+    //                 user = userOptional.get();
+    //             } else {
+    //                 user = new User();
+    //                 user.setEmail(email);
+    //                 user.setGoogleId(userId);
+    //                 user.setScore(0);
+    //                 userRepository.save(user);
+    //             }
 
-                return user;
-            } else {
-                throw new RuntimeException("Invalid ID Token");
-            }
-        } catch (GeneralSecurityException | IOException e) {
-            throw new RuntimeException("Token verification failed", e);
-        }
-    }
-
-    public AuthResponse authenticate(AuthRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
-        String jwtToken = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
-        return AuthResponse.builder()
-                .id(user.getId())
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
-
+    //             return user;
+    //         } else {
+    //             throw new RuntimeException("Invalid ID Token");
+    //         }
+    //     } catch (GeneralSecurityException | IOException e) {
+    //         throw new RuntimeException("Token verification failed", e);
+    //     }
+    // }
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already in use");
@@ -131,9 +110,51 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .build();
     }
+
+    public AuthResponse authenticate(AuthRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow();
+        String jwtToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        revokeAllUserTokens(user);
+        saveUserToken(user, jwtToken);
+        return AuthResponse.builder()
+                .id(user.getId())
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
     
     
 
+    
+    private void saveUserToken(User user, String jwtToken) {
+        Token token = Token.builder()
+        .user(user)
+        .token(jwtToken)
+        .tokenType(TokenType.BEARER)
+        .expired(false)
+        .revoked(false)
+        .build();
+        tokenRepository.save(token);
+    }
+    
+    private void revokeAllUserTokens(User user) {
+        List<Token> validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+        if (validUserTokens.isEmpty()) return;
+        validUserTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+        tokenRepository.saveAll(validUserTokens);
+    }
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
@@ -160,30 +181,9 @@ public class AuthService {
         }
     }
 
-    private void saveUserToken(User user, String jwtToken) {
-        Token token = Token.builder()
-                .user(user)
-                .token(jwtToken)
-                .tokenType(TokenType.BEARER)
-                .expired(false)
-                .revoked(false)
-                .build();
-        tokenRepository.save(token);
-    }
-
-    private void revokeAllUserTokens(User user) {
-        List<Token> validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-        if (validUserTokens.isEmpty()) return;
-        validUserTokens.forEach(token -> {
-            token.setExpired(true);
-            token.setRevoked(true);
-        });
-        tokenRepository.saveAll(validUserTokens);
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Google OAuth Client ID: " + clientId);
-        System.out.println("Redirect URI: " + redirectUri);
-    }
+    // @PostConstruct
+    // public void init() {
+    //     System.out.println("Google OAuth Client ID: " + clientId);
+    //     System.out.println("Redirect URI: " + redirectUri);
+    // }
 }

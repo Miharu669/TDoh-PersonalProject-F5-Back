@@ -1,6 +1,10 @@
 package dev.doel.TDoh.task;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import dev.doel.TDoh.minitask.MiniTaskDTO;
@@ -22,23 +26,23 @@ public class TaskService {
     @Autowired
     private UserRepository userRepository;
 
-    // Obtiene todas las tareas (sin autenticación)
-    public List<TaskDTO> getAllTasks() {
-        return taskRepository.findAll().stream()
+   
+    public List<TaskDTO> getAllTasksForUser(Long userId) {
+        return taskRepository.findAllByUserId(userId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Obtiene una tarea por ID (sin autenticación)
-    public TaskDTO getTaskById(Long taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+    
+    public TaskDTO getTaskByIdForUser(Long taskId, Long userId) {
+        Task task = taskRepository.findByIdAndUserId(taskId, userId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
         return convertToDTO(task);
     }
 
-    // Crea una nueva tarea (sin autenticación)
-    public TaskDTO createTask(TaskDTO taskDTO) {
-        User user = userRepository.findById(taskDTO.getUserId())
+   
+    public TaskDTO createTaskForUser(TaskDTO taskDTO, Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Task task = convertToEntity(taskDTO, user);
@@ -46,10 +50,10 @@ public class TaskService {
         return convertToDTO(savedTask);
     }
 
-    // Actualiza una tarea existente (sin autenticación)
-    public TaskDTO updateTask(Long taskId, TaskDTO taskDTO) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+    
+    public TaskDTO updateTaskForUser(Long taskId, TaskDTO taskDTO, Long userId) {
+        Task task = taskRepository.findByIdAndUserId(taskId, userId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
 
         boolean wasDone = task.isDone();
 
@@ -60,13 +64,18 @@ public class TaskService {
         Task updatedTask = taskRepository.save(task);
 
         if (!wasDone && taskDTO.isDone()) {
-            addPointsToUser(task.getUser().getId(), 250);
+            addPointsToUser(userId, 250);
         }
 
         return convertToDTO(updatedTask);
     }
 
-    // Agrega puntos a un usuario
+    public void deleteTaskForUser(Long taskId, Long userId) {
+        Task task = taskRepository.findByIdAndUserId(taskId, userId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
+        taskRepository.delete(task);
+    }
+
     private void addPointsToUser(Long userId, int points) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -74,14 +83,19 @@ public class TaskService {
         userRepository.save(user);
     }
 
-    // Elimina una tarea por ID (sin autenticación)
-    public void deleteTask(Long taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
-        taskRepository.delete(task);
+    public Long getCurrentAuthenticatedUserId(Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new AccessDeniedException("No authenticated user");
+        }
+    
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Jwt) {
+            return ((Jwt) principal).getClaim("userId");  
+        } else {
+            throw new AccessDeniedException("Invalid authentication principal");
+        }
     }
-
-    // Conversión de Task a TaskDTO
+    
     private TaskDTO convertToDTO(Task task) {
         List<SubTaskDTO> subTaskDTOs = task.getSubTasks() != null
                 ? task.getSubTasks().stream()
@@ -116,7 +130,6 @@ public class TaskService {
                 .build();
     }
 
-    // Conversión de TaskDTO a Task
     private Task convertToEntity(TaskDTO taskDTO, User user) {
         return Task.builder()
                 .id(taskDTO.getId())

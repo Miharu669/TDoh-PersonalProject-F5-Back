@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import dev.doel.TDoh.users.User;
-import dev.doel.TDoh.users.UserRepository;
+// import dev.doel.TDoh.users.User;
+// import dev.doel.TDoh.users.UserRepository;
 
 import java.io.IOException;
 
@@ -17,25 +17,24 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @SuppressWarnings("unused")
-    private final UserRepository userRepository;
+    // private final UserRepository userRepository;
     private final AuthService authService;
 
-    @PostMapping("/login/oauth2/idToken")
-    public ResponseEntity<User> authenticateUser(@RequestHeader("idToken") String idToken) {
-        User user = authService.authenticateUser(idToken);
-        return ResponseEntity.ok(user);
-    }
+    // @PostMapping("/login/oauth2/idToken")
+    // public ResponseEntity<User> authenticateUser(@RequestHeader("idToken") String idToken) {
+    //     User user = authService.authenticateUser(idToken);
+    //     return ResponseEntity.ok(user);
+    // }
 
-    @GetMapping("/login/success")
-    public ResponseEntity<String> loginSuccess() {
-        return ResponseEntity.ok("Autenticación exitosa");
-    }
+    // @GetMapping("/login/success")
+    // public ResponseEntity<String> loginSuccess() {
+    //     return ResponseEntity.ok("Autenticación exitosa");
+    // }
 
-    @GetMapping("/login/failure")
-    public ResponseEntity<String> loginFailure() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Autenticación fallida");
-    }
+    // @GetMapping("/login/failure")
+    // public ResponseEntity<String> loginFailure() {
+    //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Autenticación fallida");
+    // }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {

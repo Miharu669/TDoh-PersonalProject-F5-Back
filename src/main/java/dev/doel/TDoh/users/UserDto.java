@@ -1,5 +1,6 @@
 package dev.doel.TDoh.users;
 
+import dev.doel.TDoh.profiles.ProfileDTO;
 import lombok.*;
 
 
@@ -14,4 +15,5 @@ public class UserDTO {
     private String username;
     private String password;
     private String email;
+    private ProfileDTO profile;
 }
