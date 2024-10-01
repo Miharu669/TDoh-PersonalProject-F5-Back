@@ -1,10 +1,6 @@
 package dev.doel.TDoh.task;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import dev.doel.TDoh.minitask.MiniTaskDTO;
@@ -26,21 +22,18 @@ public class TaskService {
     @Autowired
     private UserRepository userRepository;
 
-   
     public List<TaskDTO> getAllTasksForUser(Long userId) {
         return taskRepository.findAllByUserId(userId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    
     public TaskDTO getTaskByIdForUser(Long taskId, Long userId) {
         Task task = taskRepository.findByIdAndUserId(taskId, userId)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
         return convertToDTO(task);
     }
 
-   
     public TaskDTO createTaskForUser(TaskDTO taskDTO, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -50,7 +43,6 @@ public class TaskService {
         return convertToDTO(savedTask);
     }
 
-    
     public TaskDTO updateTaskForUser(Long taskId, TaskDTO taskDTO, Long userId) {
         Task task = taskRepository.findByIdAndUserId(taskId, userId)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
@@ -83,19 +75,6 @@ public class TaskService {
         userRepository.save(user);
     }
 
-    public Long getCurrentAuthenticatedUserId(Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new AccessDeniedException("No authenticated user");
-        }
-    
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof Jwt) {
-            return ((Jwt) principal).getClaim("userId");  
-        } else {
-            throw new AccessDeniedException("Invalid authentication principal");
-        }
-    }
-    
     private TaskDTO convertToDTO(Task task) {
         List<SubTaskDTO> subTaskDTOs = task.getSubTasks() != null
                 ? task.getSubTasks().stream()
@@ -114,10 +93,10 @@ public class TaskService {
                                                         .isDone(miniTask.isDone())
                                                         .subTaskId(subTask.getId())
                                                         .build())
-                                                .toList()
+                                                .collect(Collectors.toList())
                                         : List.of())
                                 .build())
-                        .toList()
+                        .collect(Collectors.toList())
                 : List.of();
 
         return TaskDTO.builder()

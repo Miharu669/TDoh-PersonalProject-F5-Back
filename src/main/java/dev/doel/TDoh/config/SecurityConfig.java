@@ -1,6 +1,9 @@
 package dev.doel.TDoh.config;
 
 import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +29,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+        private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+        
         private static final String[] WHITE_LIST_URL = {
                         "/api/v1/auth/**",
+                        "/api/v1/events/**",
                         };
         private final JwtAuthenticationFilter jwtAuthFilter;
         private final AuthenticationProvider authenticationProvider;
@@ -50,6 +56,7 @@ public class SecurityConfig {
                                                 .logoutSuccessHandler((request, response,
                                                                 authentication) -> SecurityContextHolder
                                                                                 .clearContext()));
+                                                                                logger.info("User logged out successfully");
 
         return http.build();
     }

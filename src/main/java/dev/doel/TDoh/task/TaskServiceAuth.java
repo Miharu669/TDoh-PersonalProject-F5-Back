@@ -2,7 +2,6 @@
 
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.security.access.AccessDeniedException;
-// import org.springframework.security.core.Authentication;
 // import org.springframework.security.oauth2.jwt.Jwt;
 // import org.springframework.stereotype.Service;
 
@@ -13,11 +12,13 @@
 // import dev.doel.TDoh.users.user_exceptions.UserNotFoundException;
 // import dev.doel.TDoh.users.UserRepository;
 
+// import java.security.Principal;
 // import java.util.List;
+// import java.util.Map;
 // import java.util.stream.Collectors;
 
 // @Service
-// public class TaskServiceAuth {
+// public class TaskService {
 
 //     @Autowired
 //     private TaskRepository taskRepository;
@@ -25,42 +26,20 @@
 //     @Autowired
 //     private UserRepository userRepository;
 
-   
-//     public Long getCurrentAuthenticatedUserId(Authentication authentication) {
-//         if (authentication == null || authentication.getPrincipal() == null) {
-//             throw new AccessDeniedException("No authenticated user");
-//         }
-    
-//         Object principal = authentication.getPrincipal();
-//         if (principal instanceof Jwt) {
-//             String email = ((Jwt) principal).getClaim("email"); 
-//             return userRepository.findByEmail(email) 
-//                     .map(User::getId)
-//                     .orElseThrow(() -> new UserNotFoundException("User not found"));
-//         } else {
-//             throw new AccessDeniedException("Invalid authentication principal");
-//         }
-//     }
-    
-
-   
-//     public List<TaskDTO> getTasksForCurrentUser(Authentication authentication) {
-//         Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-//         return taskRepository.findByUserId(currentUserId).stream()
+//     public List<TaskDTO> getAllTasksForUser(Long userId) {
+//         return taskRepository.findAllByUserId(userId).stream()
 //                 .map(this::convertToDTO)
 //                 .collect(Collectors.toList());
 //     }
 
-    
-//     public TaskDTO getTaskByIdForCurrentUser(Long taskId, Authentication authentication) {
-//         Task task = validateTaskOwnership(taskId, authentication);
+//     public TaskDTO getTaskByIdForUser(Long taskId, Long userId) {
+//         Task task = taskRepository.findByIdAndUserId(taskId, userId)
+//                 .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
 //         return convertToDTO(task);
 //     }
 
-  
-//     public TaskDTO createTask(TaskDTO taskDTO, Authentication authentication) {
-//         Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-//         User user = userRepository.findById(currentUserId)
+//     public TaskDTO createTaskForUser(TaskDTO taskDTO, Long userId) {
+//         User user = userRepository.findById(userId)
 //                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
 //         Task task = convertToEntity(taskDTO, user);
@@ -68,9 +47,10 @@
 //         return convertToDTO(savedTask);
 //     }
 
-    
-//     public TaskDTO updateTask(Long taskId, TaskDTO taskDTO, Authentication authentication) {
-//         Task task = validateTaskOwnership(taskId, authentication);
+//     public TaskDTO updateTaskForUser(Long taskId, TaskDTO taskDTO, Long userId) {
+//         Task task = taskRepository.findByIdAndUserId(taskId, userId)
+//                 .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
+
 //         boolean wasDone = task.isDone();
 
 //         task.setTitle(taskDTO.getTitle());
@@ -80,13 +60,18 @@
 //         Task updatedTask = taskRepository.save(task);
 
 //         if (!wasDone && taskDTO.isDone()) {
-//             addPointsToUser(task.getUser().getId(), 250);
+//             addPointsToUser(userId, 250);
 //         }
 
 //         return convertToDTO(updatedTask);
 //     }
 
-   
+//     public void deleteTaskForUser(Long taskId, Long userId) {
+//         Task task = taskRepository.findByIdAndUserId(taskId, userId)
+//                 .orElseThrow(() -> new TaskNotFoundException("Task not found for the user"));
+//         taskRepository.delete(task);
+//     }
+
 //     private void addPointsToUser(Long userId, int points) {
 //         User user = userRepository.findById(userId)
 //                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -94,26 +79,25 @@
 //         userRepository.save(user);
 //     }
 
-   
-//     public void deleteTask(Long taskId, Authentication authentication) {
-//         Task task = validateTaskOwnership(taskId, authentication);
-//         taskRepository.delete(task);
-//     }
-
-   
-//     private Task validateTaskOwnership(Long taskId, Authentication authentication) {
-//         Long currentUserId = getCurrentAuthenticatedUserId(authentication);
-//         Task task = taskRepository.findById(taskId)
-//                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
-
-//                 if (task.getUser().getId() != currentUserId) {
-//                     throw new AccessDeniedException("This task does not belong to the user");
+//     public Long getCurrentAuthenticatedUserId(Principal connectedUser) {
+//         if (connectedUser == null) {
+//             throw new AccessDeniedException("No authenticated user");
 //         }
+        
 
-//         return task;
+//         Object principal = connectedUser;
+
+//         if (principal instanceof Jwt) {
+//             Jwt jwt = (Jwt) principal;
+//             Map<String, Object> claims = jwt.getClaims();
+
+//             Long userId = ((Number) claims.get("userId")).longValue();
+//             return userId;
+//         } else {
+//             throw new AccessDeniedException("Invalid authentication principal");
+//         }
 //     }
 
-    
 //     private TaskDTO convertToDTO(Task task) {
 //         List<SubTaskDTO> subTaskDTOs = task.getSubTasks() != null
 //                 ? task.getSubTasks().stream()
@@ -132,10 +116,10 @@
 //                                                         .isDone(miniTask.isDone())
 //                                                         .subTaskId(subTask.getId())
 //                                                         .build())
-//                                                 .toList()
+//                                                 .collect(Collectors.toList())
 //                                         : List.of())
 //                                 .build())
-//                         .toList()
+//                         .collect(Collectors.toList())
 //                 : List.of();
 
 //         return TaskDTO.builder()
@@ -148,7 +132,6 @@
 //                 .build();
 //     }
 
-    
 //     private Task convertToEntity(TaskDTO taskDTO, User user) {
 //         return Task.builder()
 //                 .id(taskDTO.getId())

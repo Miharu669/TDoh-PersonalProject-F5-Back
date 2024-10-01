@@ -1,6 +1,9 @@
 -- Insert a predefined user with an initial score of 0
 INSERT INTO users (email, password, role, score)
 VALUES ('user@gmail.com', '$2a$12$8LegtLQWe717tIPvZeivjuqKnaAs5.bm0Q05.5GrAmcKzXw2NjoUO', 'USER', 0);
+-- Profiles
+INSERT INTO profiles (first_name, last_name, country, user_id) VALUES
+('Vero', 'Doel', 'España', 1);
 
 -- Insert data into tasks table
 INSERT INTO tasks (title, description, is_done, user_id) VALUES 
@@ -37,4 +40,12 @@ INSERT INTO notes (title, content, user_id, created_at)
 VALUES 
 ('Note 1', 'This is the content of the first note.', 1, NOW()),  
 ('Note 2', 'This is the content of the second note.', 1, NOW());
+
+-- Insert predefined events for specific dates
+INSERT INTO events (name, date, user_id) VALUES 
+('Meeting with team', '2024-10-05', 1),  
+('Project deadline', '2024-10-10', 1),
+('Doctor appointment', '2024-10-15', 1),
+('Family gathering', '2024-10-20', 1),
+('Birthday party', '2024-10-25', 1);
 
