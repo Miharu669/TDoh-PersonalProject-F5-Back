@@ -28,9 +28,10 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id, @RequestParam Long userId) {
+    public ResponseEntity<TaskDTO> getTaskById(Principal connectedUser, @PathVariable Long id) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            TaskDTO task = taskService.getTaskByIdForUser(id, userId);
+            TaskDTO task = taskService.getTaskByIdForUser(id, user.getId());
             return ResponseEntity.ok(task);
         } catch (TaskNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -38,15 +39,17 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO, @RequestParam Long userId) {
-        TaskDTO createdTask = taskService.createTaskForUser(taskDTO, userId);
+    public ResponseEntity<TaskDTO> createTask(Principal connectedUser, @Valid @RequestBody TaskDTO taskDTO) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        TaskDTO createdTask = taskService.createTaskForUser(taskDTO, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDTO> updateTask(@PathVariable Long id, @Valid @RequestBody TaskDTO taskDTO, @RequestParam Long userId) {
+    public ResponseEntity<TaskDTO> updateTask(Principal connectedUser, @PathVariable Long id, @Valid @RequestBody TaskDTO taskDTO) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            TaskDTO updatedTask = taskService.updateTaskForUser(id, taskDTO, userId);
+            TaskDTO updatedTask = taskService.updateTaskForUser(id, taskDTO, user.getId());
             return ResponseEntity.ok(updatedTask);
         } catch (TaskNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -54,9 +57,10 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id, @RequestParam Long userId) {
+    public ResponseEntity<Void> deleteTask(Principal connectedUser, @PathVariable Long id) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            taskService.deleteTaskForUser(id, userId);
+            taskService.deleteTaskForUser(id, user.getId());
             return ResponseEntity.noContent().build();
         } catch (TaskNotFoundException e) {
             return ResponseEntity.notFound().build();
