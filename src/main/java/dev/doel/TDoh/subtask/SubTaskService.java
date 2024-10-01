@@ -26,31 +26,59 @@ public class SubTaskService {
     @Autowired
     private UserRepository userRepository;
 
-    public SubTaskDTO createSubTask(SubTaskDTO subTaskDTO) {
+    // Create a new subtask
+    public SubTaskDTO createSubTask(SubTaskDTO subTaskDTO, Long userId) {
         Task task = taskRepository.findById(subTaskDTO.getTaskId())
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+
+        // Ensure that the task belongs to the user
+        if (!task.getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to add a subtask to this task");
+        }
 
         SubTask subTask = mapToEntity(subTaskDTO, task);
         SubTask savedSubTask = subTaskRepository.save(subTask);
         return mapToDTO(savedSubTask);
     }
 
-    public List<SubTaskDTO> getSubTasksByTaskId(Long taskId) {
+    // Get subtasks by task ID
+    public List<SubTaskDTO> getSubTasksByTaskId(Long taskId, Long userId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+
+        // Ensure that the task belongs to the user
+        if (!task.getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to access subtasks of this task");
+        }
+
         List<SubTask> subTasks = subTaskRepository.findByTaskId(taskId);
         return subTasks.stream()
                 .map(this::mapToDTO)
                 .toList();
     }
 
-    public SubTaskDTO getSubTaskById(Long id) {
+    // Get a subtask by ID
+    public SubTaskDTO getSubTaskById(Long id, Long userId) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
+
+        // Ensure that the associated task belongs to the user
+        if (!subTask.getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to access this subtask");
+        }
+
         return mapToDTO(subTask);
     }
 
-    public SubTaskDTO updateSubTask(Long id, SubTaskDTO subTaskDTO) {
+    // Update a subtask
+    public SubTaskDTO updateSubTask(Long id, SubTaskDTO subTaskDTO, Long userId) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
+
+        // Ensure that the associated task belongs to the user
+        if (!subTask.getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to update this subtask");
+        }
 
         subTask.setTitle(subTaskDTO.getTitle());
         subTask.setDescription(subTaskDTO.getDescription());
@@ -64,6 +92,20 @@ public class SubTaskService {
         return mapToDTO(updatedSubTask);
     }
 
+    // Delete a subtask
+    public void deleteSubTask(Long id, Long userId) {
+        SubTask subTask = subTaskRepository.findById(id)
+                .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
+
+        // Ensure that the associated task belongs to the user
+        if (!subTask.getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to delete this subtask");
+        }
+
+        subTaskRepository.delete(subTask);
+    }
+
+    // Add points to a user
     private void addPointsToUser(Long userId, int points) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -72,34 +114,23 @@ public class SubTaskService {
         userRepository.save(user);
     }
 
-    public void deleteSubTask(Long id) {
-        SubTask subTask = subTaskRepository.findById(id)
-                .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
-
-        subTaskRepository.delete(subTask);
-    }
-
-    // Method to map SubTask to SubTaskDTO and include nested MiniTasks
+    // Mapping methods
     private SubTaskDTO mapToDTO(SubTask subTask) {
-        // Fetch and map miniTasks related to this subTask
         List<MiniTaskDTO> miniTaskDTOs = subTask.getMiniTasks() != null
                 ? subTask.getMiniTasks().stream()
                     .map(this::mapMiniTaskToDTO)
                     .toList()
-                : List.of(); // Return an empty list if there are no miniTasks
-
-        // Return the SubTaskDTO with nested miniTasks
+                : List.of();
         return SubTaskDTO.builder()
                 .id(subTask.getId())
                 .title(subTask.getTitle())
                 .description(subTask.getDescription())
                 .isDone(subTask.isDone())
                 .taskId(subTask.getTask().getId())
-                .miniTasks(miniTaskDTOs) // Include nested miniTasks
+                .miniTasks(miniTaskDTOs)
                 .build();
     }
 
-    // Helper method to map MiniTask entity to MiniTaskDTO
     private MiniTaskDTO mapMiniTaskToDTO(MiniTask miniTask) {
         return MiniTaskDTO.builder()
                 .id(miniTask.getId())
@@ -110,7 +141,6 @@ public class SubTaskService {
                 .build();
     }
 
-    // Method to map SubTaskDTO to SubTask entity
     private SubTask mapToEntity(SubTaskDTO subTaskDTO, Task task) {
         return SubTask.builder()
                 .id(subTaskDTO.getId())

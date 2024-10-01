@@ -25,9 +25,13 @@ public class MiniTaskService {
     private UserRepository userRepository;
 
     @Transactional
-    public MiniTaskDTO createMiniTask(MiniTaskDTO miniTaskDTO) {
+    public MiniTaskDTO createMiniTask(MiniTaskDTO miniTaskDTO, Long userId) {
         SubTask subTask = subTaskRepository.findById(miniTaskDTO.getSubTaskId())
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
+
+        if (!subTask.getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to add a mini task to this subtask");
+        }
 
         MiniTask miniTask = mapToEntity(miniTaskDTO, subTask);
         MiniTask savedMiniTask = miniTaskRepository.save(miniTask);
@@ -35,7 +39,14 @@ public class MiniTaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<MiniTaskDTO> getMiniTasksBySubTaskId(Long subTaskId) {
+    public List<MiniTaskDTO> getMiniTasksBySubTaskId(Long subTaskId, Long userId) {
+        SubTask subTask = subTaskRepository.findById(subTaskId)
+                .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
+
+        if (!subTask.getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to access mini tasks of this subtask");
+        }
+
         List<MiniTask> miniTasks = miniTaskRepository.findBySubTaskId(subTaskId);
         return miniTasks.stream()
                 .map(this::mapToDTO)
@@ -43,16 +54,26 @@ public class MiniTaskService {
     }
 
     @Transactional(readOnly = true)
-    public MiniTaskDTO getMiniTaskById(Long id) {
+    public MiniTaskDTO getMiniTaskById(Long id, Long userId) {
         MiniTask miniTask = miniTaskRepository.findById(id)
                 .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask not found"));
+
+        if (!miniTask.getSubTask().getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to access this mini task");
+        }
+
         return mapToDTO(miniTask);
     }
 
+    // Update a mini task
     @Transactional
-    public MiniTaskDTO updateMiniTask(Long id, MiniTaskDTO miniTaskDTO) {
+    public MiniTaskDTO updateMiniTask(Long id, MiniTaskDTO miniTaskDTO, Long userId) {
         MiniTask miniTask = miniTaskRepository.findById(id)
                 .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask not found"));
+
+        if (!miniTask.getSubTask().getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to update this mini task");
+        }
 
         boolean wasDone = miniTask.isDone();
         miniTask.setTitle(miniTaskDTO.getTitle());
@@ -67,10 +88,16 @@ public class MiniTaskService {
         return mapToDTO(updatedMiniTask);
     }
 
+    // Delete a mini task
     @Transactional
-    public void deleteMiniTask(Long id) {
+    public void deleteMiniTask(Long id, Long userId) {
         MiniTask miniTask = miniTaskRepository.findById(id)
                 .orElseThrow(() -> new MiniTaskNotFoundException("MiniTask not found"));
+
+        if (!miniTask.getSubTask().getTask().getUser().getId().equals(userId)) {
+            throw new UserNotFoundException("User does not have permission to delete this mini task");
+        }
+
         miniTaskRepository.delete(miniTask);
     }
 
@@ -81,7 +108,6 @@ public class MiniTaskService {
         userRepository.save(user);
     }
 
-    // Mapping MiniTaskDTO to MiniTask entity
     private MiniTask mapToEntity(MiniTaskDTO miniTaskDTO, SubTask subTask) {
         return MiniTask.builder()
                 .id(miniTaskDTO.getId())
@@ -92,7 +118,6 @@ public class MiniTaskService {
                 .build();
     }
 
-    // Mapping MiniTask entity to MiniTaskDTO
     private MiniTaskDTO mapToDTO(MiniTask miniTask) {
         return MiniTaskDTO.builder()
                 .id(miniTask.getId())

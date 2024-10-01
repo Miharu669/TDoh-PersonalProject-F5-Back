@@ -3,8 +3,12 @@ package dev.doel.TDoh.minitask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import dev.doel.TDoh.users.User;
+
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -15,32 +19,42 @@ public class MiniTaskController {
     private MiniTaskService miniTaskService;
 
     @PostMapping
-    public ResponseEntity<MiniTaskDTO> createMiniTask(@RequestBody MiniTaskDTO miniTaskDTO) {
-        MiniTaskDTO createdMiniTask = miniTaskService.createMiniTask(miniTaskDTO);
+    public ResponseEntity<MiniTaskDTO> createMiniTask(Principal connectedUser,@RequestBody MiniTaskDTO miniTaskDTO) {
+                User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        MiniTaskDTO createdMiniTask = miniTaskService.createMiniTask(miniTaskDTO, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMiniTask);
     }
 
     @GetMapping("/subtask/{subtaskId}")
-    public ResponseEntity<List<MiniTaskDTO>> getMiniTasksBySubTaskId(@PathVariable Long subtaskId) {
-        List<MiniTaskDTO> miniTasks = miniTaskService.getMiniTasksBySubTaskId(subtaskId);
+    public ResponseEntity<List<MiniTaskDTO>> getMiniTasksBySubTaskId(Principal connectedUser,@PathVariable Long subtaskId) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        List<MiniTaskDTO> miniTasks = miniTaskService.getMiniTasksBySubTaskId(subtaskId, user.getId());
         return ResponseEntity.ok(miniTasks);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MiniTaskDTO> getMiniTaskById(@PathVariable Long id) {
-        MiniTaskDTO miniTask = miniTaskService.getMiniTaskById(id);
+    public ResponseEntity<MiniTaskDTO> getMiniTaskById(Principal connectedUser,@PathVariable Long id) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        MiniTaskDTO miniTask = miniTaskService.getMiniTaskById(id, user.getId());
         return ResponseEntity.ok(miniTask);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MiniTaskDTO> updateMiniTask(@PathVariable Long id, @RequestBody MiniTaskDTO miniTaskDTO) {
-        MiniTaskDTO updatedMiniTask = miniTaskService.updateMiniTask(id, miniTaskDTO);
+    public ResponseEntity<MiniTaskDTO> updateMiniTask(Principal connectedUser,@PathVariable Long id, @RequestBody MiniTaskDTO miniTaskDTO) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        MiniTaskDTO updatedMiniTask = miniTaskService.updateMiniTask(id, miniTaskDTO, user.getId());
         return ResponseEntity.ok(updatedMiniTask);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMiniTask(@PathVariable Long id) {
-        miniTaskService.deleteMiniTask(id);
+    public ResponseEntity<Void> deleteMiniTask(Principal connectedUser,@PathVariable Long id) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        miniTaskService.deleteMiniTask(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }
