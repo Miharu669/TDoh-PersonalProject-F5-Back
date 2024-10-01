@@ -42,10 +42,10 @@ public class NoteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNoteById(Principal connectedUser) {
+    public ResponseEntity<Void> deleteNoteById(Principal connectedUser, @PathVariable Long id) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-        noteService.deleteNoteById(user.getId());
+        noteService.deleteNoteById(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 

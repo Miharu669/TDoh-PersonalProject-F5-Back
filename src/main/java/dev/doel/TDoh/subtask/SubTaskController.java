@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import dev.doel.TDoh.users.User;
 
 @RestController
-@RequestMapping("${api-endpoint}/task/{taskId}/subtasks")
+@RequestMapping("${api-endpoint}/tasks/{taskId}/subtasks")
 public class SubTaskController {
 
     @Autowired

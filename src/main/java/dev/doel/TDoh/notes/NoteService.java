@@ -51,7 +51,7 @@ public class NoteService {
         return new NoteDTO(updatedNote.getId(), updatedNote.getTitle(), updatedNote.getContent(), updatedNote.getCreatedAt());
     }
 
-    public void deleteNoteById(Long noteId) {
+    public void deleteNoteById(Long noteId, Long userId) {
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new NoteNotFoundException("Note not found"));
 

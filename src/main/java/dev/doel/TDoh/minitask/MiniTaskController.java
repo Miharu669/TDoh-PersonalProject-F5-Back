@@ -12,22 +12,27 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("${api-endpoint}/minitasks")
+@RequestMapping("${api-endpoint}/tasks/{taskId}/subtasks/{subtaskId}/minitasks")
 public class MiniTaskController {
 
     @Autowired
     private MiniTaskService miniTaskService;
 
     @PostMapping
-    public ResponseEntity<MiniTaskDTO> createMiniTask(Principal connectedUser,@RequestBody MiniTaskDTO miniTaskDTO) {
-                User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-
+    public ResponseEntity<MiniTaskDTO> createMiniTask(Principal connectedUser,
+                                                       @PathVariable Long taskId, 
+                                                       @PathVariable Long subtaskId,
+                                                       @RequestBody MiniTaskDTO miniTaskDTO) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        
         MiniTaskDTO createdMiniTask = miniTaskService.createMiniTask(miniTaskDTO, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMiniTask);
     }
 
-    @GetMapping("/subtask/{subtaskId}")
-    public ResponseEntity<List<MiniTaskDTO>> getMiniTasksBySubTaskId(Principal connectedUser,@PathVariable Long subtaskId) {
+    @GetMapping
+    public ResponseEntity<List<MiniTaskDTO>> getMiniTasksBySubTaskId(Principal connectedUser,
+                                                                      @PathVariable Long taskId,
+                                                                      @PathVariable Long subtaskId) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
         List<MiniTaskDTO> miniTasks = miniTaskService.getMiniTasksBySubTaskId(subtaskId, user.getId());
@@ -35,7 +40,10 @@ public class MiniTaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MiniTaskDTO> getMiniTaskById(Principal connectedUser,@PathVariable Long id) {
+    public ResponseEntity<MiniTaskDTO> getMiniTaskById(Principal connectedUser,
+                                                        @PathVariable Long taskId,
+                                                        @PathVariable Long subtaskId,
+                                                        @PathVariable Long id) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
         MiniTaskDTO miniTask = miniTaskService.getMiniTaskById(id, user.getId());
@@ -43,7 +51,11 @@ public class MiniTaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MiniTaskDTO> updateMiniTask(Principal connectedUser,@PathVariable Long id, @RequestBody MiniTaskDTO miniTaskDTO) {
+    public ResponseEntity<MiniTaskDTO> updateMiniTask(Principal connectedUser,
+                                                       @PathVariable Long taskId,
+                                                       @PathVariable Long subtaskId,
+                                                       @PathVariable Long id,
+                                                       @RequestBody MiniTaskDTO miniTaskDTO) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
         MiniTaskDTO updatedMiniTask = miniTaskService.updateMiniTask(id, miniTaskDTO, user.getId());
@@ -51,7 +63,10 @@ public class MiniTaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMiniTask(Principal connectedUser,@PathVariable Long id) {
+    public ResponseEntity<Void> deleteMiniTask(Principal connectedUser,
+                                                @PathVariable Long taskId,
+                                                @PathVariable Long subtaskId,
+                                                @PathVariable Long id) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
         miniTaskService.deleteMiniTask(id, user.getId());

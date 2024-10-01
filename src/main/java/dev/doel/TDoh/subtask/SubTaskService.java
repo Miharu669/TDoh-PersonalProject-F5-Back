@@ -26,12 +26,10 @@ public class SubTaskService {
     @Autowired
     private UserRepository userRepository;
 
-    // Create a new subtask
     public SubTaskDTO createSubTask(SubTaskDTO subTaskDTO, Long userId) {
         Task task = taskRepository.findById(subTaskDTO.getTaskId())
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
-        // Ensure that the task belongs to the user
         if (!task.getUser().getId().equals(userId)) {
             throw new UserNotFoundException("User does not have permission to add a subtask to this task");
         }
@@ -41,12 +39,10 @@ public class SubTaskService {
         return mapToDTO(savedSubTask);
     }
 
-    // Get subtasks by task ID
     public List<SubTaskDTO> getSubTasksByTaskId(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
-        // Ensure that the task belongs to the user
         if (!task.getUser().getId().equals(userId)) {
             throw new UserNotFoundException("User does not have permission to access subtasks of this task");
         }
@@ -57,12 +53,10 @@ public class SubTaskService {
                 .toList();
     }
 
-    // Get a subtask by ID
     public SubTaskDTO getSubTaskById(Long id, Long userId) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
 
-        // Ensure that the associated task belongs to the user
         if (!subTask.getTask().getUser().getId().equals(userId)) {
             throw new UserNotFoundException("User does not have permission to access this subtask");
         }
@@ -70,12 +64,10 @@ public class SubTaskService {
         return mapToDTO(subTask);
     }
 
-    // Update a subtask
     public SubTaskDTO updateSubTask(Long id, SubTaskDTO subTaskDTO, Long userId) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
 
-        // Ensure that the associated task belongs to the user
         if (!subTask.getTask().getUser().getId().equals(userId)) {
             throw new UserNotFoundException("User does not have permission to update this subtask");
         }
@@ -92,12 +84,10 @@ public class SubTaskService {
         return mapToDTO(updatedSubTask);
     }
 
-    // Delete a subtask
     public void deleteSubTask(Long id, Long userId) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
 
-        // Ensure that the associated task belongs to the user
         if (!subTask.getTask().getUser().getId().equals(userId)) {
             throw new UserNotFoundException("User does not have permission to delete this subtask");
         }
@@ -105,7 +95,6 @@ public class SubTaskService {
         subTaskRepository.delete(subTask);
     }
 
-    // Add points to a user
     private void addPointsToUser(Long userId, int points) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -114,7 +103,6 @@ public class SubTaskService {
         userRepository.save(user);
     }
 
-    // Mapping methods
     private SubTaskDTO mapToDTO(SubTask subTask) {
         List<MiniTaskDTO> miniTaskDTOs = subTask.getMiniTasks() != null
                 ? subTask.getMiniTasks().stream()
