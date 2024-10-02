@@ -16,7 +16,8 @@ INSERT INTO subtasks (title, description, is_done, task_id) VALUES
 ('Subtask 1.1', 'Description for subtask 1.1', 0, 1),
 ('Subtask 1.2', 'Description for subtask 1.2', 1, 1),
 ('Subtask 2.1', 'Description for subtask 2.1', 0, 2),
-('Subtask 3.1', 'Description for subtask 3.1', 0, 3);
+('Subtask 3.1', 'Description for subtask 3.1', 0, 3),
+('ekiscrim', 'no me olvides WAPO', 0, 3);
 
 -- Insert data into minitasks table
 -- INSERT INTO minitasks (title, description, is_done, subtask_id) VALUES

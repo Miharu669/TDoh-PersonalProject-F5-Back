@@ -19,7 +19,7 @@ public class SubTaskController {
     @Autowired
     private SubTaskService subTaskService;
 
-    @PostMapping
+    @PostMapping()
     public ResponseEntity<SubTaskDTO> createSubTask(Principal connectedUser,
              Long taskId,
             @RequestBody SubTaskDTO subTaskDTO) {
