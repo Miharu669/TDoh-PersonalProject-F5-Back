@@ -3,7 +3,7 @@ package dev.doel.TDoh.task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import dev.doel.TDoh.minitask.MiniTaskDTO;
+// import dev.doel.TDoh.minitask.MiniTaskDTO;
 import dev.doel.TDoh.subtask.SubTaskDTO;
 import dev.doel.TDoh.task.task_exceptions.TaskNotFoundException;
 import dev.doel.TDoh.users.User;
@@ -84,20 +84,33 @@ public class TaskService {
                                 .description(subTask.getDescription())
                                 .isDone(subTask.isDone())
                                 .taskId(task.getId())
-                                .miniTasks(subTask.getMiniTasks() != null
-                                        ? subTask.getMiniTasks().stream()
-                                                .map(miniTask -> MiniTaskDTO.builder()
-                                                        .id(miniTask.getId())
-                                                        .title(miniTask.getTitle())
-                                                        .description(miniTask.getDescription())
-                                                        .isDone(miniTask.isDone())
-                                                        .subTaskId(subTask.getId())
-                                                        .build())
-                                                .collect(Collectors.toList())
-                                        : List.of())
                                 .build())
                         .collect(Collectors.toList())
                 : List.of();
+
+//     private TaskDTO convertToDTO(Task task) {
+//         List<SubTaskDTO> subTaskDTOs = task.getSubTasks() != null
+//                 ? task.getSubTasks().stream()
+//                         .map(subTask -> SubTaskDTO.builder()
+//                                 .id(subTask.getId())
+//                                 .title(subTask.getTitle())
+//                                 .description(subTask.getDescription())
+//                                 .isDone(subTask.isDone())
+//                                 .taskId(task.getId())
+//                                 .miniTasks(subTask.getMiniTasks() != null
+//                                         ? subTask.getMiniTasks().stream()
+//                                                 .map(miniTask -> MiniTaskDTO.builder()
+//                                                         .id(miniTask.getId())
+//                                                         .title(miniTask.getTitle())
+//                                                         .description(miniTask.getDescription())
+//                                                         .isDone(miniTask.isDone())
+//                                                         .subTaskId(subTask.getId())
+//                                                         .build())
+//                                                 .collect(Collectors.toList())
+//                                         : List.of())
+//                                 .build())
+//                         .collect(Collectors.toList())
+//                 : List.of();
 
         return TaskDTO.builder()
                 .id(task.getId())

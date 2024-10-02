@@ -4,8 +4,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import dev.doel.TDoh.minitask.MiniTask;
-import dev.doel.TDoh.minitask.MiniTaskDTO;
+// import dev.doel.TDoh.minitask.MiniTask;
+// import dev.doel.TDoh.minitask.MiniTaskDTO;
 import dev.doel.TDoh.subtask.subtask_exceptions.SubTaskNotFoundException;
 import dev.doel.TDoh.task.Task;
 import dev.doel.TDoh.task.TaskRepository;
@@ -104,30 +104,30 @@ public class SubTaskService {
     }
 
     private SubTaskDTO mapToDTO(SubTask subTask) {
-        List<MiniTaskDTO> miniTaskDTOs = subTask.getMiniTasks() != null
-                ? subTask.getMiniTasks().stream()
-                    .map(this::mapMiniTaskToDTO)
-                    .toList()
-                : List.of();
+        // List<MiniTaskDTO> miniTaskDTOs = subTask.getMiniTasks() != null
+        //         ? subTask.getMiniTasks().stream()
+                    // .map(this::mapMiniTaskToDTO)
+                    // .toList()
+                // : List.of();
         return SubTaskDTO.builder()
                 .id(subTask.getId())
                 .title(subTask.getTitle())
                 .description(subTask.getDescription())
                 .isDone(subTask.isDone())
                 .taskId(subTask.getTask().getId())
-                .miniTasks(miniTaskDTOs)
+                // .miniTasks(miniTaskDTOs)
                 .build();
     }
 
-    private MiniTaskDTO mapMiniTaskToDTO(MiniTask miniTask) {
-        return MiniTaskDTO.builder()
-                .id(miniTask.getId())
-                .title(miniTask.getTitle())
-                .description(miniTask.getDescription())
-                .isDone(miniTask.isDone())
-                .subTaskId(miniTask.getSubTask().getId())
-                .build();
-    }
+    // private MiniTaskDTO mapMiniTaskToDTO(MiniTask miniTask) {
+    //     return MiniTaskDTO.builder()
+    //             .id(miniTask.getId())
+    //             .title(miniTask.getTitle())
+    //             .description(miniTask.getDescription())
+    //             .isDone(miniTask.isDone())
+    //             .subTaskId(miniTask.getSubTask().getId())
+    //             .build();
+    // }
 
     private SubTask mapToEntity(SubTaskDTO subTaskDTO, Task task) {
         return SubTask.builder()

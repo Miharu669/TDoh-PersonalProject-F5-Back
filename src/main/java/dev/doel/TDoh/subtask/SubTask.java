@@ -1,8 +1,8 @@
 package dev.doel.TDoh.subtask;
 
-import java.util.List;
+// import java.util.List;
 
-import dev.doel.TDoh.minitask.MiniTask;
+// import dev.doel.TDoh.minitask.MiniTask;
 import dev.doel.TDoh.task.Task;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -39,8 +39,8 @@ public class SubTask {
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    @OneToMany(mappedBy = "subTask", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<MiniTask> miniTasks;
+    // @OneToMany(mappedBy = "subTask", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    // private List<MiniTask> miniTasks;
     
 
 }

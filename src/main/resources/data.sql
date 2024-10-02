@@ -19,11 +19,11 @@ INSERT INTO subtasks (title, description, is_done, task_id) VALUES
 ('Subtask 3.1', 'Description for subtask 3.1', 0, 3);
 
 -- Insert data into minitasks table
-INSERT INTO minitasks (title, description, is_done, subtask_id) VALUES
-('MiniTask 1.1.1', 'Description for mini task 1.1.1', 0, 1),
-('MiniTask 1.1.2', 'Description for mini task 1.1.2', 1, 1),
-('MiniTask 1.2.1', 'Description for mini task 1.2.1', 0, 2),
-('MiniTask 2.1.1', 'Description for mini task 2.1.1', 0, 3);
+-- INSERT INTO minitasks (title, description, is_done, subtask_id) VALUES
+-- ('MiniTask 1.1.1', 'Description for mini task 1.1.1', 0, 1),
+-- ('MiniTask 1.1.2', 'Description for mini task 1.1.2', 1, 1),
+-- ('MiniTask 1.2.1', 'Description for mini task 1.2.1', 0, 2),
+-- ('MiniTask 2.1.1', 'Description for mini task 2.1.1', 0, 3);
 
 -- Sample score increment for task completion
 UPDATE users SET score = score + 250 WHERE user_id = 1 AND (SELECT COUNT(*) FROM tasks WHERE user_id = 1 AND is_done = 1) > 0;
@@ -32,8 +32,8 @@ UPDATE users SET score = score + 250 WHERE user_id = 1 AND (SELECT COUNT(*) FROM
 UPDATE users SET score = score + 25 WHERE user_id = 1 AND (
     SELECT COUNT(*) FROM subtasks WHERE task_id = 1 AND is_done = 1) > 0;
 
-UPDATE users SET score = score + 5 WHERE user_id = 1 AND (
-    SELECT COUNT(*) FROM minitasks WHERE subtask_id = 1 AND is_done = 1) > 0;
+-- UPDATE users SET score = score + 5 WHERE user_id = 1 AND (
+--     SELECT COUNT(*) FROM minitasks WHERE subtask_id = 1 AND is_done = 1) > 0;
 
 -- Insert data into notes table (for the user's notes feature)INSERT INTO notes (title, content, user_id, created_at) 
 INSERT INTO notes (title, content, user_id, created_at) 
