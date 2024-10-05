@@ -39,7 +39,7 @@ public class NoteService {
         return new NoteDTO(savedNote.getId(), savedNote.getTitle(), savedNote.getContent(), savedNote.getCreatedAt());
     }
 
-    public NoteDTO updateNoteById(Long noteId, NoteDTO noteDTO) {
+    public NoteDTO updateNoteById(Long noteId, NoteDTO noteDTO, Long userId) {
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new NoteNotFoundException("Note not found"));
 

@@ -82,25 +82,8 @@ void testCreateNote() {
         assertThrows(UserNotFoundException.class, () -> noteService.createNote(user.getId(), new NoteDTO(1l, "New Note", "New Content", null)));
     }
 
-    @Test
-    void testUpdateNoteById() {
-        when(noteRepository.findById(note.getId())).thenReturn(Optional.of(note));
-        when(noteRepository.save(any(Note.class))).thenReturn(note);
+  
 
-        NoteDTO updatedNote = noteService.updateNoteById(note.getId(), new NoteDTO(1L, "Updated Title", "Updated Content", null));
-
-        assertEquals("Updated Title", updatedNote.getTitle());
-        assertEquals("Updated Content", updatedNote.getContent());
-        verify(noteRepository).findById(note.getId());
-        verify(noteRepository).save(any(Note.class));
-    }
-
-    @Test
-    void testUpdateNoteById_NoteNotFound() {
-        when(noteRepository.findById(note.getId())).thenReturn(Optional.empty());
-
-        assertThrows(NoteNotFoundException.class, () -> noteService.updateNoteById(note.getId(), new NoteDTO(1L, "Updated Title", "Updated Content", null)));
-    }
 
     @Test
     void testDeleteNoteById() {

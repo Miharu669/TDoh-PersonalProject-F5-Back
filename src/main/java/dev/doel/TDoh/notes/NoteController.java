@@ -6,7 +6,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import dev.doel.TDoh.notes.note_exceptions.NoteNotFoundException;
 import dev.doel.TDoh.users.User;
+import jakarta.validation.Valid;
 
 import java.security.Principal;
 import java.util.List;
@@ -33,12 +35,18 @@ public class NoteController {
         return ResponseEntity.ok(createdNote);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<NoteDTO> updateNote(Principal connectedUser, @RequestBody NoteDTO noteDTO) {
-        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        NoteDTO updatedNote = noteService.updateNoteById(user.getId(), noteDTO);
+    
 
-        return ResponseEntity.ok(updatedNote);
+    @PutMapping("/{id}")
+    public ResponseEntity<NoteDTO> updateNote(Principal connectedUser, @PathVariable Long id,@Valid @RequestBody NoteDTO noteDTO) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            NoteDTO updatedNote = noteService.updateNoteById(id, noteDTO, user.getId());
+            return ResponseEntity.ok(updatedNote);
+        } catch (NoteNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }	
+      
     }
 
     @DeleteMapping("/{id}")
