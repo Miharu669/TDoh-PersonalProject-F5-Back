@@ -26,7 +26,14 @@ public class EventController {
         return ResponseEntity.ok(createdEvent);
     }
 
-    @GetMapping("/{date}")
+    @GetMapping
+    public ResponseEntity<List<EventDTO>> getAllEvents(Principal connectedUser) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        List<EventDTO> events = eventService.getAllEvents(user.getId());
+        return ResponseEntity.ok(events);
+    }
+
+    @GetMapping("/date/{date}")
     public ResponseEntity<List<EventDTO>> getEventsByDate(Principal connectedUser, @PathVariable String date) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         LocalDate localDate = LocalDate.parse(date);
@@ -34,10 +41,24 @@ public class EventController {
         return ResponseEntity.ok(events);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<EventDTO> getEventById(Principal connectedUser, @PathVariable Long id) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        EventDTO event = eventService.getEventById(id, user.getId());
+        return ResponseEntity.ok(event);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(Principal connectedUser, @PathVariable Long id) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         eventService.deleteEvent(id, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+    @DeleteMapping("/date/{date}")
+    public ResponseEntity<Void> deleteEventsByDate(Principal connectedUser, @PathVariable String date) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        LocalDate localDate = LocalDate.parse(date);
+        eventService.deleteEventsByDate(localDate, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

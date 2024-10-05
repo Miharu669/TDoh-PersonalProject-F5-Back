@@ -20,10 +20,19 @@ public class EventService {
         Event event = new Event();
         event.setName(eventDTO.getName());
         event.setDate(eventDTO.getDate());
+
         User user = new User(); 
         user.setId(userId); 
         event.setUser(user); 
+
         return convertToDTO(eventRepository.save(event));
+    }
+
+    public List<EventDTO> getAllEvents(Long userId) {
+        return eventRepository.findByUserId(userId)
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
     public List<EventDTO> getEventsByDate(LocalDate date, Long userId) {
@@ -33,12 +42,28 @@ public class EventService {
                 .toList();
     }
 
+    public EventDTO getEventById(Long id, Long userId) {
+        Optional<Event> eventOptional = eventRepository.findByIdAndUserId(id, userId);
+        if (eventOptional.isPresent()) {
+            return convertToDTO(eventOptional.get());
+        } else {
+            throw new EventNotFoundException("Event not found or does not belong to the user.");
+        }
+    }
+
     public void deleteEvent(Long id, Long userId) {
         Optional<Event> eventOptional = eventRepository.findById(id);
         if (eventOptional.isPresent() && eventOptional.get().getUser().getId().equals(userId)) {
             eventRepository.deleteById(id);
         } else {
             throw new EventNotFoundException("Event not found or does not belong to the user.");
+        }
+    }
+
+    public void deleteEventsByDate(LocalDate date, Long userId) {
+        int deletedCount = eventRepository.deleteByDateAndUserId(date, userId);
+        if (deletedCount == 0) {
+            throw new EventNotFoundException("No events found on " + date + " for the user.");
         }
     }
 
