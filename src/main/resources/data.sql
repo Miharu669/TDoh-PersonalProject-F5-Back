@@ -1,6 +1,6 @@
 -- Insert a predefined user with an initial score of 0
-INSERT INTO users (email, password, role, score)
-VALUES ('user@gmail.com', '$2a$12$8LegtLQWe717tIPvZeivjuqKnaAs5.bm0Q05.5GrAmcKzXw2NjoUO', 'USER', 0);
+INSERT INTO users (user_id, email, password, role, score)
+VALUES (default, 'user@gmail.com', '$2a$12$8LegtLQWe717tIPvZeivjuqKnaAs5.bm0Q05.5GrAmcKzXw2NjoUO', 'USER', 0);
 -- Profiles
 INSERT INTO profiles (first_name, last_name, country, user_id) VALUES
 ('Vero', 'Doel', 'España', 1);

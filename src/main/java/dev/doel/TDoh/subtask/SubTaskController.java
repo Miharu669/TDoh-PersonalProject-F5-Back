@@ -3,6 +3,7 @@ package dev.doel.TDoh.subtask;
 import java.security.Principal;
 import java.util.List;
 
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +59,19 @@ public class SubTaskController {
         SubTaskDTO updatedSubTask = subTaskService.updateSubTask(id, subTaskDTO, user.getId());
         return ResponseEntity.ok(updatedSubTask);
     }
+
+    @PatchMapping("/{id}/status")
+public ResponseEntity<SubTaskDTO> updateSubtaskStatus(Principal connectedUser, @PathVariable Long taskId, @PathVariable Long Id, @RequestBody Map<String, Boolean> statusUpdate) {
+    User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+    boolean isDone = statusUpdate.get("isDone");
+    try {
+        SubTaskDTO updatedSubtask = subTaskService.updateSubTaskStatusForUser(taskId, Id, isDone, user.getId());
+        return ResponseEntity.ok(updatedSubtask);
+    } catch (SubTaskNotFoundException e) {
+        return ResponseEntity.notFound().build();
+    }
+}
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSubTask(Principal connectedUser,

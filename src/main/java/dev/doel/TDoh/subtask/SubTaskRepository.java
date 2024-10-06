@@ -1,6 +1,7 @@
 package dev.doel.TDoh.subtask;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +15,6 @@ public interface SubTaskRepository extends JpaRepository<SubTask, Long> {
     List<SubTask> findByTaskIdAndIsDoneFalse(Long taskId);
 
     List<SubTask> findByTaskIdAndTitleContainingIgnoreCase(Long taskId, String title);
+
+    Optional<SubTask> findByIdAndTaskId(Long id, Long taskId);
 }

@@ -74,6 +74,15 @@ public class TaskService {
         user.setScore(user.getScore() + points);
         userRepository.save(user);
     }
+    public TaskDTO updateTaskStatusForUser(Long taskId, boolean isDone, Long userId) throws TaskNotFoundException {
+        Task task = taskRepository.findByIdAndUserId(taskId, userId)
+            .orElseThrow(() -> new TaskNotFoundException("Task not found or not authorized"));
+        task.setDone(isDone);
+        taskRepository.save(task);
+        return new TaskDTO();
+    }
+    
+    
 
     private TaskDTO convertToDTO(Task task) {
         List<SubTaskDTO> subTaskDTOs = task.getSubTasks() != null

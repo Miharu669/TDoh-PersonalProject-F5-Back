@@ -3,6 +3,7 @@ package dev.doel.TDoh.task;
 import java.security.Principal;
 import java.util.List;
 
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,23 @@ public class TaskController {
             return ResponseEntity.notFound().build();
         }
     }
+
+  @PatchMapping("/{id}/status")
+public ResponseEntity<TaskDTO> updateTaskStatus(Principal connectedUser, @PathVariable Long id, @RequestBody Map<String, Boolean> statusUpdate) {
+    User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+    boolean isDone = statusUpdate.get("isDone");
+    try {
+        TaskDTO updatedTask = taskService.updateTaskStatusForUser(id, isDone, user.getId());
+        return ResponseEntity.ok(updatedTask);
+    } catch (TaskNotFoundException e) {
+        return ResponseEntity.notFound().build();
+    }
+}
+
+
+
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(Principal connectedUser, @PathVariable Long id) {

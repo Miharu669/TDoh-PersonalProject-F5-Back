@@ -84,6 +84,17 @@ public class SubTaskService {
         return mapToDTO(updatedSubTask);
     }
 
+    public SubTaskDTO updateSubTaskStatusForUser(Long taskId, Long subtaskId, boolean isDone, Long userId) throws SubTaskNotFoundException {
+        taskRepository.findByIdAndUserId(taskId, userId)
+            .orElseThrow(() -> new SubTaskNotFoundException("Task not found or not authorized"));
+        SubTask subtask = subTaskRepository.findByIdAndTaskId(subtaskId, taskId)
+            .orElseThrow(() -> new SubTaskNotFoundException("Subtask not found or not authorized"));
+        subtask.setDone(isDone);
+        subTaskRepository.save(subtask);
+        return new SubTaskDTO();
+    }
+    
+
     public void deleteSubTask(Long id, Long userId) {
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new SubTaskNotFoundException("SubTask not found"));
