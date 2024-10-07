@@ -30,7 +30,7 @@ public class SubTaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdSubTask);
     }
 
-    @GetMapping
+    @GetMapping("/tasks/{taskId}")
     public ResponseEntity<List<SubTaskDTO>> getSubTasksByTaskId(Principal connectedUser,
             @PathVariable Long taskId) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();

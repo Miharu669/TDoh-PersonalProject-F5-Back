@@ -47,7 +47,8 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDTO> updateTask(Principal connectedUser, @PathVariable Long id, @Valid @RequestBody TaskDTO taskDTO) {
+    public ResponseEntity<TaskDTO> updateTask(Principal connectedUser, @PathVariable Long id,
+            @Valid @RequestBody TaskDTO taskDTO) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
             TaskDTO updatedTask = taskService.updateTaskForUser(id, taskDTO, user.getId());
@@ -57,22 +58,18 @@ public class TaskController {
         }
     }
 
-  @PatchMapping("/{id}/status")
-public ResponseEntity<TaskDTO> updateTaskStatus(Principal connectedUser, @PathVariable Long id, @RequestBody Map<String, Boolean> statusUpdate) {
-    User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-    boolean isDone = statusUpdate.get("isDone");
-    try {
-        TaskDTO updatedTask = taskService.updateTaskStatusForUser(id, isDone, user.getId());
-        return ResponseEntity.ok(updatedTask);
-    } catch (TaskNotFoundException e) {
-        return ResponseEntity.notFound().build();
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<TaskDTO> updateTaskStatus(Principal connectedUser, @PathVariable Long id,
+            @RequestBody Map<String, Boolean> statusUpdate) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        boolean isDone = statusUpdate.get("isDone");
+        try {
+            TaskDTO updatedTask = taskService.updateTaskStatusForUser(id, isDone, user.getId());
+            return ResponseEntity.ok(updatedTask);
+        } catch (TaskNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-}
-
-
-
-
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(Principal connectedUser, @PathVariable Long id) {
