@@ -16,9 +16,9 @@ Instructions on how to install and set up the project.
 ```bash
 git clone https://github.com/Miharu669/TDoh-PersonalProject-F5-Back.git
 ```
-server localhost:8080
-db_tdoh 1234 :3306
-add to .env a valid API_JWT_KEY
+- server localhost:8080
+- db_tdoh 1234 :3306
+- add to .env a valid API_JWT_KEY
 
 ## Usage
 
@@ -69,7 +69,8 @@ api-endpoint= /api/v1
 - <p>PATCH localhost:8080/api/v1/subtasks/{id}/status</p>(mark a subtask as done)
 - <p>DELETE localhost:8080/api/api/v1/subtasks/{id}</p>
 
-
+## FrontEnd
+- Front Repo: [TDoH-FrontEnd](https://github.com/Miharu669/TDoh-PersonalProject-F5-Front)
 
 ## Contact
 
