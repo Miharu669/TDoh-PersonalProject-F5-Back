@@ -1,6 +1,6 @@
 # Project TDoH
 
-TDoH is a personal project i did to manage basically my life, to help me (and others in the future) to be more organize and stop procrastinanting
+TDoH is a personal project I created to help manage my life and assist others in the future. It aims to improve organization and reduce procrastination.
 
 ## Table of Contents
 
@@ -60,7 +60,7 @@ api-endpoint= /api/v1
 - <p>PATCH localhost:8080/api/v1/tasks/{id}/status</p>(mark a task as done)
 - <p>DELETE localhost:8080/api/api/v1/tasks/{id}</p>
 
-### Tasks
+### SubTasks
 - <p>GET localhost:8080/api/v1/subtasks</p>
 - <p>GET localhost:8080/api/v1/subtask/tasks/{taskId}</p>(get subtask by taskId)
 - <p>GET localhost:8080/api/v1/subtasks/{id}</p>(get subtask by id)
