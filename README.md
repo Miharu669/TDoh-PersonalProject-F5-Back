@@ -72,6 +72,12 @@ api-endpoint= /api/v1
 ## FrontEnd
 - Front Repo: [TDoH-FrontEnd](https://github.com/Miharu669/TDoh-PersonalProject-F5-Front)
 
+## Tools
+- Springboot
+- Postman
+- Docker
+- MySQL Workbench
+
 ## Contact
 
 - Name: Verónica Doel
